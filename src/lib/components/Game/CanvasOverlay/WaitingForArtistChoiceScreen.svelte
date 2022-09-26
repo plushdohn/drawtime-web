@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Player } from "$lib/logic/shared";
+  import { GamePhase, type Player } from "$lib/logic/shared";
+  import GameTimer from "../GameTimer.svelte";
 
   export let artist: string;
   export let players: Player[];
@@ -13,4 +14,6 @@
   <span class="font-bold text-3xl leading-relaxed">
     {artistName} is choosing...
   </span>
+
+  <GameTimer phase={GamePhase.Choosing} />
 </div>

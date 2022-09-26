@@ -102,7 +102,7 @@
     <ColorPicker callback={onColorChange} selectedColor={color} />
   </div>
 
-  {#if game.phase === GamePhase.Drawing || game.phase === GamePhase.Choosing || game.phase === GamePhase.Transitioning}
+  {#if game.phase === GamePhase.Drawing}
     <GameTimer {...game} />
   {/if}
 

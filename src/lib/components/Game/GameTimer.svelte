@@ -5,7 +5,7 @@
   const progress = tweened(100);
 
   export let phase: GamePhase;
-  export let drawingTime: number;
+  export let drawingTime = 60;
 
   $: switch (phase) {
     case GamePhase.Drawing:

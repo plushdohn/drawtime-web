@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Player } from "$lib/logic/shared";
+  import { GamePhase, type Player } from "$lib/logic/shared";
+  import GameTimer from "../../GameTimer.svelte";
   import RoundEndLeaderboard from "./RoundEndLeaderboard.svelte";
 
   export let secret: string;
@@ -20,4 +21,6 @@
   </span>
   <hr class="w-full border-zinc-600 my-4" />
   <RoundEndLeaderboard {players} {artist} />
+
+  <GameTimer phase={GamePhase.Transitioning} />
 </div>

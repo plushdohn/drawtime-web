@@ -50,7 +50,7 @@
   />
   <div class="w-full bg-white" style="height: 6%;" />
 
-  {#if game.phase === GamePhase.Drawing || game.phase === GamePhase.Choosing || game.phase === GamePhase.Transitioning}
+  {#if game.phase === GamePhase.Drawing}
     <GameTimer {...game} />
   {/if}
 

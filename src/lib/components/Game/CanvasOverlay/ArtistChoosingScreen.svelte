@@ -1,5 +1,7 @@
 <script lang="ts">
   import { chooseWord } from "$lib/logic/client/game";
+  import { GamePhase } from "$lib/logic/shared";
+  import GameTimer from "../GameTimer.svelte";
 
   export let choices: string[];
   export let socket: WebSocket;
@@ -9,7 +11,9 @@
   }
 </script>
 
-<div class="p-16 bg-zinc-800 rounded flex flex-col text-center max-w-sm">
+<div
+  class="p-16 bg-zinc-800 rounded flex flex-col text-center max-w-sm relative"
+>
   <span class="text-3xl font-bold">Choose a word!</span>
   <span class="text-zinc-400 mt-4">
     If you don't choose, a word will be chosen randomly in 10 seconds.
@@ -27,4 +31,6 @@
       {/each}
     </div>
   {/if}
+
+  <GameTimer phase={GamePhase.Choosing} />
 </div>
