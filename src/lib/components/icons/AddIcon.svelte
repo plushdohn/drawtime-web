@@ -1,0 +1,8 @@
+<script lang="ts">
+	let clazz = '';
+	export { clazz as class };
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class={clazz}>
+	<path d="M21.65 38.85v-12.5H9.15v-4.7h12.5V9.15h4.7v12.5h12.5v4.7h-12.5v12.5Z" />
+</svg>
