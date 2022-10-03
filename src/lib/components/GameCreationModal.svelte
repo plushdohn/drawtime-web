@@ -1,15 +1,12 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { authStore } from "$lib/logic/client/auth";
   import { createGame } from "$lib/logic/client/live/game";
-  import {
-    connectToGameServer,
-    gameServerConnectionStore,
-  } from "$lib/logic/client/live/socket";
+  import { connectToGameServer, gameServerConnectionStore } from "$lib/logic/client/live/socket";
 
   export let topicId: string;
   export let onCancel: () => void;
+  export let accessToken: string;
 
   let drawingTime = 60;
   let rounds = 8;
@@ -24,7 +21,7 @@
 
     if (!socket) {
       try {
-        socket = await connectToGameServer($authStore?.accessToken as string);
+        socket = await connectToGameServer(accessToken);
       } catch (err) {
         error = (err as Error).message;
         pending = false;
@@ -44,26 +41,16 @@
   };
 </script>
 
-<div
-  class="fixed p-8 inset-0 w-full h-full bg-[#000000aa] flex justify-center items-center z-10"
->
+<div class="fixed p-8 inset-0 w-full h-full bg-[#000000aa] flex justify-center items-center z-10">
   {#if pending}
-    <div
-      class="p-8 sm:p-16 flex flex-col items-center bg-zinc-900 rounded-sm max-w-xs w-full"
-    >
+    <div class="p-8 sm:p-16 flex flex-col items-center bg-zinc-900 rounded-sm max-w-xs w-full">
       <Spinner class="w-8 mb-4 self-center" />
-      <span class="text-zinc-400 text-center self-center">
-        Creating game...
-      </span>
+      <span class="text-zinc-400 text-center self-center">Creating game...</span>
     </div>
   {:else if error !== null}
-    <div
-      class="p-8 sm:p-16 flex flex-col items-center bg-zinc-900 rounded-sm max-w-xs w-full"
-    >
+    <div class="p-8 sm:p-16 flex flex-col items-center bg-zinc-900 rounded-sm max-w-xs w-full">
       <span class="text-3xl font-bold">Oh no!</span>
-      <span class="text-zinc-400 text-center mt-1.5">
-        Couldn't reach game servers.
-      </span>
+      <span class="text-zinc-400 text-center mt-1.5">Couldn't reach game servers.</span>
       <button
         type="button"
         on:click={handleSubmit}
@@ -80,9 +67,7 @@
       </button>
     </div>
   {:else}
-    <form
-      class="p-8 sm:p-16 flex flex-col bg-zinc-900 rounded-sm max-w-md w-full"
-    >
+    <form class="p-8 sm:p-16 flex flex-col bg-zinc-900 rounded-sm max-w-md w-full">
       <span class="font-bold text-4xl">Create game</span>
       <span class="text-zinc-500 mt-2">Set the game's parameters.</span>
 

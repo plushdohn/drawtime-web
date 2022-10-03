@@ -201,6 +201,7 @@ export type TopicModel = {
   general: boolean;
   nsfw: boolean;
   creator: string;
+  createdAt: string;
 };
 
 export type WordModel = {

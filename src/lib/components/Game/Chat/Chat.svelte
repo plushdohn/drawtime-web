@@ -34,13 +34,12 @@
 
   onMount(() => {
     const unsub = subscribeToChatEvents((e) => {
+      console.log("RECEIVED A CHAT MESSAGE");
       if (e.kind === ChatEventKind.MESSAGE) {
         const player = players.find((p) => p.id === e.payload.senderId);
 
         if (!player) {
-          return console.warn(
-            "Received a message from an unknown player, ignoring."
-          );
+          return console.warn("Received a message from an unknown player, ignoring.");
         }
 
         events = [
@@ -57,9 +56,7 @@
         const player = players.find((p) => p.id === e.payload);
 
         if (!player) {
-          return console.warn(
-            "Received a guess from an unknown player, ignoring."
-          );
+          return console.warn("Received a guess from an unknown player, ignoring.");
         }
 
         events = [

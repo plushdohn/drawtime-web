@@ -1,4 +1,4 @@
-import { ClientEventKind, GamePhase, type GameState } from "../../shared";
+import { ClientEventKind, GamePhase, type GameState } from "$lib/logic/shared";
 import { generateAsyncId, sendAsyncEvent } from "./async";
 import { sendClientEvent } from "./socket";
 
@@ -132,7 +132,7 @@ export function onCorrectGuess(playerId: string, guessIndex: number, points: num
       return {
         ...p,
         score: (p.score ?? 0) + points,
-        guess: guessIndex,
+        guessIndex: guessIndex,
       };
     }),
   }));

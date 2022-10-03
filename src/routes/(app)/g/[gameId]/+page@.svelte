@@ -2,25 +2,25 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { authStore } from "$lib/logic/client/auth";
   import { connectToGameServer, gameServerConnectionStore } from "$lib/logic/client/live/socket";
   import { onMount } from "svelte";
   import Game from "$lib/components/Game/index.svelte";
+  import type { PageData } from "./$types";
 
   const gameId = $page.params.gameId;
 
-  onMount(async () => {
-    if ($authStore === null) {
-      return goto(`/login?next=${encodeURIComponent(`/g/${gameId}`)}`);
-    }
+  export let data: PageData;
 
+  $: user = data.session.user!;
+
+  onMount(async () => {
     if ($gameServerConnectionStore.socket === null) {
-      connectToGameServer($authStore.accessToken);
+      connectToGameServer(data.session.accessToken as string);
     }
   });
 
   const reconnect = () => {
-    if ($authStore !== null) connectToGameServer($authStore.accessToken);
+    connectToGameServer(data.session.accessToken as string);
   };
 </script>
 
@@ -29,10 +29,8 @@
 </svelte:head>
 
 <div class="w-full h-screen bg-zinc-900 flex justify-center items-center">
-  {#if $authStore === null}
-    <Spinner class="w-7" />
-  {:else if $gameServerConnectionStore.socket !== null}
-    <Game {gameId} socket={$gameServerConnectionStore.socket} userId={$authStore.user.id} />
+  {#if $gameServerConnectionStore.socket !== null}
+    <Game {gameId} socket={$gameServerConnectionStore.socket} userId={user.id} />
   {:else}
     <div class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm">
       {#if $gameServerConnectionStore.error !== null}

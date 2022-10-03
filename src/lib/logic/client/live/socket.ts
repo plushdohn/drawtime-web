@@ -14,6 +14,7 @@ import {
   onRoundStarted,
 } from "./game";
 import { ServerEventKind, type AnyClientEvent, type AnyServerEvent } from "$lib/logic/shared";
+import { onChatMessage, onCorrectGuess as onChatCorrectGuess } from "./chat";
 
 type GameServerConnectionStore = {
   pending: boolean;
@@ -90,6 +91,7 @@ function handleMessage(message: string) {
     case ServerEventKind.DRAWING_STARTED:
       return onDrawingStarted(...data.payload);
     case ServerEventKind.CORRECT_GUESS:
+      onChatCorrectGuess(data.payload[0]);
       return onCorrectGuess(...data.payload);
     case ServerEventKind.CLUE_UPDATE:
       return onClueUpdate(...data.payload);
@@ -100,7 +102,7 @@ function handleMessage(message: string) {
     case ServerEventKind.DRAWING_UPDATE:
       return onDrawingUpdate(...data.payload);
     case ServerEventKind.CHAT_MESSAGE:
-      return;
+      return onChatMessage(...data.payload);
   }
 
   const _exhaustiveCheck: never = data;

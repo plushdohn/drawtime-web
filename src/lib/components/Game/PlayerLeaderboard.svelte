@@ -23,9 +23,7 @@
         alt={player.username}
         referrerpolicy="no-referrer"
       />
-      <div
-        class="flex-grow flex flex-col justify-center items-start ml-4 pr-10"
-      >
+      <div class="flex-grow flex flex-col justify-center items-start ml-4 pr-10">
         <span class="text-white font-semibold">{player.username}</span>
         {#if player.score !== null}
           <span class="text-zinc-300 italic text-xs">
@@ -38,8 +36,7 @@
       {:else}
         <div
           class="w-6 h-6 rounded-full bg-zinc-900"
-          class:bg-green-400={player.guessIndex !== null &&
-            player.guessIndex !== 0}
+          class:bg-green-400={player.guessIndex !== null}
         />
       {/if}
     </div>

@@ -1,8 +1,6 @@
-import { derived, get as getStoreValue, readable, type Readable } from "svelte/store";
-import type { ProfileModel } from "../shared";
-import type { User } from "@supabase/supabase-js";
 import { supabaseClient } from "./supabase";
 
+/*
 type AuthStore = {
   user: User;
   accessToken: string;
@@ -61,14 +59,19 @@ export const userProfileStore = derived<Readable<AuthStore>, UserProfileStore>(
     error: null,
   }
 );
+*/
 
 export const signInWithGoogle = async (redirect?: string) => {
+  const redirectUrl = `${window.location.origin}/login-success${
+    redirect ? `?next=${encodeURIComponent(redirect)}` : ""
+  }`;
+
   const { user, error } = await supabaseClient.auth.signIn(
     {
       provider: "google",
     },
     {
-      redirectTo: `${window.location.origin}/login-success${redirect ? `?next=${redirect}` : ""}`,
+      redirectTo: redirectUrl,
     }
   );
 
