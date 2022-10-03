@@ -1,8 +1,10 @@
+import { verifyCaptchaToken } from "$lib/logic/server/captcha";
 import { createTopicWithWords } from "$lib/logic/server/database";
 import { getTopicThumbnailsFromBase64 } from "$lib/logic/server/images";
 import { uploadTopicThumbs } from "$lib/logic/server/storage";
 import { createTopicSchema } from "$lib/logic/shared";
 import { type RequestHandler, json, error } from "@sveltejs/kit";
+import { z } from "zod";
 
 export const POST: RequestHandler = async (event) => {
   const user = event.locals.session.user;
@@ -21,11 +23,20 @@ export const POST: RequestHandler = async (event) => {
   // TODO: Check if user is subscriber or moderator
   // before validating topic
 
-  const parseResult = createTopicSchema().safeParse(body);
+  const parseResult = createTopicSchema().extend({ captchaToken: z.string() }).safeParse(body);
 
   if (!parseResult.success) throw error(400, "Invalid topic details");
 
   const data = parseResult.data;
+
+  /**
+   * Validate captcha
+   */
+  try {
+    await verifyCaptchaToken(data.captchaToken);
+  } catch (err) {
+    throw error(403, "Invalid captcha:" + (err as Error).message);
+  }
 
   /**
    * Try to process thumbnail before everything else,

@@ -18,14 +18,14 @@
   let error: string | null = null;
 
   const { form, errors, validate, handleSubmit } = createForm(
-    createTopicSchema().extend({ captcha: z.string() }),
+    createTopicSchema().extend({ captchaToken: z.string() }),
     {
       name: "",
       unlisted: false,
       nsfw: false,
       words: [],
       thumbnail: null,
-      captcha: null,
+      captchaToken: null,
     },
     {
       onlyValidateAfterFirstSubmit: true,
@@ -48,8 +48,8 @@
     }
   );
 
-  async function goToHome() {
-    await goto("/");
+  async function goToMyTopics() {
+    await goto("/my-topics");
   }
 </script>
 
@@ -81,7 +81,7 @@
 
     <TopicFormThumbnail bind:thumbnail={$form.thumbnail} error={$errors.thumbnail} {validate} />
 
-    <TopicFormCaptcha bind:token={$form.captcha} error={$errors.captcha} {validate} />
+    <TopicFormCaptcha bind:token={$form.captchaToken} error={$errors.captchaToken} {validate} />
 
     <button
       on:click={handleSubmit}
@@ -102,18 +102,21 @@
       <span class="text-4xl font-bold">Oh no!</span>
       <span class="text-zinc-400 mt-1">An error has occurred.</span>
 
-      <FancyButton class="bg-red-500 hover:bg-red-400 mt-8" callback={handleSubmit}>
+      <FancyButton class="w-full bg-red-500 hover:bg-red-400 mt-8" callback={handleSubmit}>
         Retry
       </FancyButton>
-      <FancyButton class="bg-zinc-700 hover:bg-zinc-600 mt-3" callback={() => (showModal = false)}>
+      <FancyButton
+        class="w-full bg-zinc-700 hover:bg-zinc-600 mt-3"
+        callback={() => (showModal = false)}
+      >
         Cancel
       </FancyButton>
     {:else}
       <span class="text-4xl font-bold">Done!</span>
       <span class="text-zinc-400 mt-1">Your topic was created.</span>
 
-      <FancyButton class="bg-zinc-700 hover:bg-zinc-600 mt-8" callback={goToHome}>
-        Go to Home
+      <FancyButton class="w-full bg-zinc-700 hover:bg-zinc-600 mt-8" callback={goToMyTopics}>
+        Go to My Topics
       </FancyButton>
     {/if}
   </FullScreenModal>

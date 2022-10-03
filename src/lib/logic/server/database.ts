@@ -58,3 +58,41 @@ export async function getTopicsByUser(userId: string) {
 
   return topics;
 }
+
+export async function updateTopicWithWords(
+  topicId: string,
+  changes: {
+    name: string;
+    nsfw: boolean;
+    unlisted: boolean;
+    words: string[];
+  }
+) {
+  const { error: updateErr } = await supabaseServer
+    .from<TopicModel>("topics")
+    .update({
+      name: changes.name,
+      nsfw: changes.nsfw,
+      unlisted: changes.unlisted,
+    })
+    .match({ id: topicId })
+    .single();
+
+  if (updateErr) throw updateErr;
+
+  const { error: wordsDeleteErr } = await supabaseServer
+    .from<WordModel>("words")
+    .delete()
+    .eq("topic", topicId);
+
+  if (wordsDeleteErr) throw wordsDeleteErr;
+
+  const { error: wordsInsertErr } = await supabaseServer.from<WordModel>("words").insert(
+    changes.words.map((w) => ({
+      topic: topicId,
+      word: w.toLowerCase().trim(),
+    }))
+  );
+
+  if (wordsInsertErr) throw wordsInsertErr;
+}

@@ -21,14 +21,14 @@
   export let data: PageData;
 
   const { form, errors, validate, handleSubmit } = createForm(
-    createTopicSchema().extend({ captcha: z.string() }),
+    createTopicSchema().extend({ captchaToken: z.string(), thumbnail: z.string().nullable() }),
     {
       name: data.topic.name,
       unlisted: data.topic.unlisted,
       nsfw: data.topic.nsfw,
       words: data.topic.words,
       thumbnail: null,
-      captcha: null,
+      captchaToken: null,
     },
     {
       onlyValidateAfterFirstSubmit: true,
@@ -38,12 +38,12 @@
         showModal = true;
 
         try {
-          const id = await axios.post("/api/topics", values);
+          const res = await axios.patch(`/api/topics/${data.topic.id}`, values);
 
-          console.log("Created topic with ID: " + id);
+          console.log(res.data);
         } catch (err) {
           error = (err as Error).message;
-          console.warn("An error occurred while creating topic:" + (err as Error).message);
+          console.warn("An error occurred while editing topic:" + (err as Error).message);
         } finally {
           pending = false;
         }
@@ -89,14 +89,14 @@
       topicId={data.topic.id}
     />
 
-    <TopicFormCaptcha bind:token={$form.captcha} error={$errors.captcha} {validate} />
+    <TopicFormCaptcha bind:token={$form.captchaToken} error={$errors.captchaToken} {validate} />
 
     <button
       on:click={handleSubmit}
       type="button"
       class="p-2.5 rounded-sm mt-12 font-semibold bg-red-500 w-full hover:bg-red-400"
     >
-      Create topic
+      Apply changes
     </button>
   </form>
 </div>
@@ -110,18 +110,27 @@
       <span class="text-4xl font-bold">Oh no!</span>
       <span class="text-zinc-400 mt-1">An error has occurred.</span>
 
-      <FancyButton class="bg-red-500 hover:bg-red-400 mt-8" callback={handleSubmit}>
+      <FancyButton class="w-full bg-red-500 hover:bg-red-400 mt-8" callback={handleSubmit}>
         Retry
       </FancyButton>
-      <FancyButton class="bg-zinc-700 hover:bg-zinc-600 mt-3" callback={() => (showModal = false)}>
+      <FancyButton
+        class="w-full bg-zinc-700 hover:bg-zinc-600 mt-3"
+        callback={() => (showModal = false)}
+      >
         Cancel
       </FancyButton>
     {:else}
       <span class="text-4xl font-bold">Done!</span>
       <span class="text-zinc-400 mt-1">Your changes were applied.</span>
 
-      <FancyButton class="bg-zinc-700 hover:bg-zinc-600 mt-8" callback={goToHome}>
-        Go to Home
+      <FancyButton class="w-full bg-red-500 hover:bg-red-400 mt-8" callback={goToHome}>
+        Go to Home page
+      </FancyButton>
+      <FancyButton
+        class="w-full bg-zinc-700 hover:bg-zinc-600 mt-3"
+        callback={() => (showModal = false)}
+      >
+        Keep editing
       </FancyButton>
     {/if}
   </FullScreenModal>
