@@ -1,19 +1,17 @@
-<script>
-  import Spinner from "$lib/components/Spinner.svelte";
-  import { userProfileStore } from "$lib/logic/client/auth";
+<script lang="ts">
   import SignInButton from "./SignInButton.svelte";
   import Logo from "./Logo.svelte";
   import Profile from "./Profile/index.svelte";
-  import { browser } from "$app/environment";
   import CreateTopicIcon from "../icons/CreateTopicIcon.svelte";
+  import type { ProfileModel } from "$lib/logic/shared";
+
+  export let userProfile: ProfileModel | null;
 </script>
 
 <nav class="flex items-center justify-between h-16 px-4 bg-zinc-800">
   <Logo />
 
-  {#if $userProfileStore.pending || !browser}
-    <Spinner class="w-7" />
-  {:else if $userProfileStore.profile}
+  {#if userProfile !== null}
     <div class="flex items-center gap-4">
       <a
         href="/create-topic"
@@ -21,7 +19,7 @@
       >
         <CreateTopicIcon class="w-6 fill-current" />
       </a>
-      <Profile profile={$userProfileStore.profile} />
+      <Profile profile={userProfile} />
     </div>
   {:else}
     <SignInButton />

@@ -2,11 +2,11 @@
   import { goto } from "$app/navigation";
   import Spinner from "$lib/components/Spinner.svelte";
   import { authStore } from "$lib/logic/client/auth";
-  import { createGame } from "$lib/logic/client/game";
+  import { createGame } from "$lib/logic/client/live/game";
   import {
     connectToGameServer,
     gameServerConnectionStore,
-  } from "$lib/logic/client/sockets";
+  } from "$lib/logic/client/live/socket";
 
   export let topicId: string;
   export let onCancel: () => void;

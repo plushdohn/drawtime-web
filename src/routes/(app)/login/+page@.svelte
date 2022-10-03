@@ -1,11 +1,13 @@
 <script>
   import { signInWithGoogle } from "$lib/logic/client/auth";
-  import { onMount } from "svelte";
   import { page } from "$app/stores";
 
   function handleGoogleLogin() {
     const next = $page.url.searchParams.get("next");
-    signInWithGoogle(next ? decodeURI(next) : undefined);
+
+    console.log(next);
+
+    signInWithGoogle(next ?? undefined);
   }
 </script>
 

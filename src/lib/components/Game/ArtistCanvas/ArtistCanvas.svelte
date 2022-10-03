@@ -4,12 +4,8 @@
   import ResetDrawingButton from "./ResetDrawingButton.svelte";
   import ColorPicker from "./ColorPicker.svelte";
   import GameTimer from "../GameTimer.svelte";
-  import {
-    DrawingUpdateKind,
-    GamePhase,
-    type GameState,
-  } from "$lib/logic/shared";
-  import { sendDrawingUpdate } from "$lib/logic/client/game";
+  import { GamePhase, type GameState } from "$lib/logic/shared";
+  import { DrawingUpdateKind, updateDrawing } from "$lib/logic/client/live/drawing";
 
   export let game: GameState;
   export let socket: WebSocket;
@@ -22,10 +18,7 @@
   }
 
   const drawableCanvas = (node: HTMLCanvasElement) => {
-    function getScaleAdjustedCoordinates(
-      canvas: HTMLCanvasElement,
-      e: PointerEvent
-    ) {
+    function getScaleAdjustedCoordinates(canvas: HTMLCanvasElement, e: PointerEvent) {
       const elementRelativeX = e.offsetX;
       const elementRelativeY = e.offsetY;
       const x = (elementRelativeX * canvas.width) / canvas.clientWidth;
@@ -50,7 +43,13 @@
       ctx.moveTo(x, y);
       ctx.strokeStyle = color;
 
-      sendDrawingUpdate(socket, [DrawingUpdateKind.Start, x, y, 1, color]);
+      updateDrawing(socket, {
+        kind: DrawingUpdateKind.START,
+        x,
+        y,
+        size: 1,
+        color,
+      });
     }
 
     function onPointerUp(event: PointerEvent) {
@@ -67,7 +66,13 @@
       ctx.lineTo(x, y);
       ctx.stroke();
 
-      sendDrawingUpdate(socket, [DrawingUpdateKind.Continue, x, y, 1, color]);
+      updateDrawing(socket, {
+        kind: DrawingUpdateKind.CONTINUE,
+        x,
+        y,
+        size: 1,
+        color,
+      });
     }
 
     node.addEventListener("pointerdown", onPointerDown);
@@ -81,23 +86,9 @@
 </script>
 
 <div class="relative flex flex-col h-full">
-  <Clue
-    phase={game.phase}
-    clue={game.clue}
-    secret={game.secret}
-    artist={game.artist}
-    {userId}
-  />
-  <canvas
-    class="h-[88%] bg-white aspect-square"
-    width="512"
-    height="512"
-    use:drawableCanvas
-  />
-  <div
-    class="w-full bg-zinc-800 flex justify-between items-center p-2"
-    style="height: 6%;"
-  >
+  <Clue phase={game.phase} clue={game.clue} secret={game.secret} artist={game.artist} {userId} />
+  <canvas class="h-[88%] bg-white aspect-square" width="512" height="512" use:drawableCanvas />
+  <div class="w-full bg-zinc-800 flex justify-between items-center p-2" style="height: 6%;">
     <ResetDrawingButton />
     <ColorPicker callback={onColorChange} selectedColor={color} />
   </div>

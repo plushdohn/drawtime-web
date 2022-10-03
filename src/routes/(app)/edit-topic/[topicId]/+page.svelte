@@ -1,40 +1,128 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
   import { goto } from "$app/navigation";
+  import FancyButton from "$lib/components/FancyButton.svelte";
+  import FullScreenModal from "$lib/components/FullScreenModal.svelte";
   import Spinner from "$lib/components/Spinner.svelte";
-  import { authStore, userProfileStore } from "$lib/logic/client/auth";
-  import Form from "$lib/components/TopicEditingForm/index.svelte";
-  import { getTopicWithWords } from "$lib/logic/client/database";
-  import { page } from "$app/stores";
+  import TopicFormCaptcha from "$lib/components/TopicForm/TopicFormCaptcha.svelte";
+  import TopicFormCheckbox from "$lib/components/TopicForm/TopicFormCheckbox.svelte";
+  import TopicFormName from "$lib/components/TopicForm/TopicFormName.svelte";
+  import TopicFormThumbnail from "$lib/components/TopicForm/TopicFormThumbnail.svelte";
+  import TopicFormWords from "$lib/components/TopicForm/TopicFormWords.svelte";
+  import { createForm } from "$lib/logic/client/form";
+  import { createTopicSchema } from "$lib/logic/shared";
+  import type { PageData } from "./$types";
+  import axios from "axios";
+  import { z } from "zod";
 
-  const topicId = $page.params.topicId;
+  let showModal = false;
+  let pending = false;
+  let error: string | null = null;
 
-  $: if (browser && $authStore === null) {
-    goto("/login");
+  export let data: PageData;
+
+  const { form, errors, validate, handleSubmit } = createForm(
+    createTopicSchema().extend({ captcha: z.string() }),
+    {
+      name: data.topic.name,
+      unlisted: data.topic.unlisted,
+      nsfw: data.topic.nsfw,
+      words: data.topic.words,
+      thumbnail: null,
+      captcha: null,
+    },
+    {
+      onlyValidateAfterFirstSubmit: true,
+      onSubmit: async (values) => {
+        error = null;
+        pending = true;
+        showModal = true;
+
+        try {
+          const id = await axios.post("/api/topics", values);
+
+          console.log("Created topic with ID: " + id);
+        } catch (err) {
+          error = (err as Error).message;
+          console.warn("An error occurred while creating topic:" + (err as Error).message);
+        } finally {
+          pending = false;
+        }
+      },
+    }
+  );
+
+  async function goToHome() {
+    await goto("/");
   }
-
-  const getTopicToEdit = async () => {
-    return await getTopicWithWords(topicId);
-  };
 </script>
 
 <svelte:head>
   <title>Drawtime.io | Edit topic</title>
 </svelte:head>
 
-<div class="flex flex-col items-center p-8 lg:p-16 ">
-  {#if $userProfileStore.pending}
-    <Spinner class="w-7" />
-  {:else if $authStore !== null && $userProfileStore.profile !== null}
-    {#await getTopicToEdit()}
-      <Spinner class="w-7" />
-    {:then topic}
-      <Form authToken={$authStore.accessToken} {topic} />
-    {:catch err}
-      <span class="font-bold text-4xl">Oh no!</span>
-      <span class="text-zinc-400 mt-2">
-        An error occurred while fetching topic details.
-      </span>
-    {/await}
-  {/if}
+<div class="flex flex-col items-start p-8 lg:p-16 ">
+  <form class="max-w-2xl w-full flex flex-col">
+    <span class="font-bold text-4xl">Edit topic</span>
+
+    <TopicFormName bind:value={$form.name} error={$errors.name} {validate} />
+
+    <TopicFormWords bind:words={$form.words} errors={$errors} {validate} />
+
+    <TopicFormCheckbox
+      label="NSFW"
+      description="Does your topic contain any NSFW words?"
+      name="nsfw"
+      bind:checked={$form.nsfw}
+    />
+
+    <TopicFormCheckbox
+      label="Unlisted"
+      description="If you check this, your topic won't be searchable and it won't appear in the home page. You can only share it via link."
+      name="unlisted"
+      bind:checked={$form.unlisted}
+    />
+
+    <TopicFormThumbnail
+      bind:thumbnail={$form.thumbnail}
+      error={$errors.thumbnail}
+      {validate}
+      topicId={data.topic.id}
+    />
+
+    <TopicFormCaptcha bind:token={$form.captcha} error={$errors.captcha} {validate} />
+
+    <button
+      on:click={handleSubmit}
+      type="button"
+      class="p-2.5 rounded-sm mt-12 font-semibold bg-red-500 w-full hover:bg-red-400"
+    >
+      Create topic
+    </button>
+  </form>
 </div>
+
+{#if showModal}
+  <FullScreenModal>
+    {#if pending}
+      <Spinner class="w-7" />
+      <span class="text-zinc-400 mt-4">Editing topic...</span>
+    {:else if error !== null}
+      <span class="text-4xl font-bold">Oh no!</span>
+      <span class="text-zinc-400 mt-1">An error has occurred.</span>
+
+      <FancyButton class="bg-red-500 hover:bg-red-400 mt-8" callback={handleSubmit}>
+        Retry
+      </FancyButton>
+      <FancyButton class="bg-zinc-700 hover:bg-zinc-600 mt-3" callback={() => (showModal = false)}>
+        Cancel
+      </FancyButton>
+    {:else}
+      <span class="text-4xl font-bold">Done!</span>
+      <span class="text-zinc-400 mt-1">Your changes were applied.</span>
+
+      <FancyButton class="bg-zinc-700 hover:bg-zinc-600 mt-8" callback={goToHome}>
+        Go to Home
+      </FancyButton>
+    {/if}
+  </FullScreenModal>
+{/if}

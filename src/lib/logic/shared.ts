@@ -1,5 +1,182 @@
 import { z } from "zod";
 
+/**
+ * Topic schema, used for form validation on the client
+ * and topic validation on the server before adding
+ * to DB
+ */
+export function createTopicSchema(subscriber?: boolean) {
+  return z.object({
+    name: z
+      .string()
+      .min(5, "Must contain at least 5 characters")
+      .max(64, "Can't be more than 64 characters"),
+    nsfw: z.boolean(),
+    unlisted: z.boolean(),
+    thumbnail: z.string({
+      invalid_type_error: "A thumbnail is required",
+      required_error: "A thumbnail is required",
+    }),
+    words: z
+      .array(
+        z
+          .string()
+          .min(2, "Words need at least 2 characters")
+          .max(32, "Words can't have more than 32 characters")
+      )
+      .min(5, "At least 5 words are required")
+      .max(subscriber ? 1024 : 256, "Word limit reached")
+      .superRefine((arr, ctx) => {
+        const duplicates = Array.from(arr.keys()).filter((i) => {
+          const item = arr[i];
+
+          return arr.indexOf(item) !== arr.lastIndexOf(item);
+        });
+
+        for (const d of duplicates) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Word appears multiple times",
+            path: [d],
+          });
+
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Word list contains duplicate word "${arr[d]}"`,
+            path: [],
+          });
+        }
+      }),
+  });
+}
+
+/**
+ * Client-sent events
+ */
+
+export enum ClientEventKind {
+  CREATE_GAME = "CREATE_GAME",
+  JOIN_GAME = "JOIN_GAME",
+  START_GAME = "START_GAME",
+  CHOOSE_WORD = "CHOOSE_WORD",
+  MAKE_GUESS = "MAKE_GUESS",
+  UPDATE_DRAWING = "UPDATE_DRAWING",
+  SEND_CHAT_MESSAGE = "SEND_CHAT_MESSAGE",
+}
+
+export type CreateGameEvent = GenericEvent<
+  ClientEventKind.CREATE_GAME,
+  [asyncId: string, topicId: string, drawingTime: number, rounds: number]
+>;
+
+export type JoinGameEvent = GenericEvent<
+  ClientEventKind.JOIN_GAME,
+  [asyncId: string, gameId: string]
+>;
+
+export type StartGameEvent = GenericEvent<ClientEventKind.START_GAME, []>;
+
+export type ChooseWordEvent = GenericEvent<ClientEventKind.CHOOSE_WORD, [choice: string]>;
+
+export type MakeGuessEvent = GenericEvent<ClientEventKind.MAKE_GUESS, [guess: string]>;
+
+export type UpdateDrawingEvent = GenericEvent<
+  ClientEventKind.UPDATE_DRAWING,
+  [continueFlag: number, x: number, y: number, size: number, color: string]
+>;
+
+export type SendChatMessageEvent = GenericEvent<
+  ClientEventKind.SEND_CHAT_MESSAGE,
+  [message: string]
+>;
+
+export type AnyClientEvent =
+  | CreateGameEvent
+  | JoinGameEvent
+  | StartGameEvent
+  | ChooseWordEvent
+  | MakeGuessEvent
+  | SendChatMessageEvent
+  | UpdateDrawingEvent;
+
+/**
+ * Server-sent events
+ */
+
+export enum ServerEventKind {
+  ASYNC_RESPONSE = "ASYNC_RESPONSE",
+  PLAYER_JOINED = "PLAYER_JOINED",
+  PLAYER_LEFT = "PLAYER_LEFT",
+  ROUND_STARTED = "ROUND_STARTED",
+  DRAWING_STARTED = "DRAWING_STARTED",
+  CORRECT_GUESS = "CORRECT_GUESS",
+  ROUND_ENDED = "ROUND_ENDED",
+  CHAT_MESSAGE = "CHAT_MESSAGE",
+  DRAWING_UPDATE = "DRAWING_UPDATE",
+  CLUE_UPDATE = "CLUE_UPDATE",
+  GAME_ENDED = "GAME_ENDED",
+}
+
+export type AsyncResponseEvent = GenericEvent<
+  ServerEventKind.ASYNC_RESPONSE,
+  [asyncId: string, json: string]
+>;
+
+export type PlayerJoinedEvent = GenericEvent<
+  ServerEventKind.PLAYER_JOINED,
+  [id: string, name: string, avatarUrl: string | null]
+>;
+
+export type PlayerLeftEvent = GenericEvent<ServerEventKind.PLAYER_LEFT, [playerId: string]>;
+
+export type RoundStartedEvent = GenericEvent<
+  ServerEventKind.ROUND_STARTED,
+  [artistId: string, round: number, choices: string | null]
+>;
+
+export type DrawingStartedEvent = GenericEvent<
+  ServerEventKind.DRAWING_STARTED,
+  [clue: string, secret: string | null]
+>;
+
+export type CorrectGuessEvent = GenericEvent<
+  ServerEventKind.CORRECT_GUESS,
+  [playerId: string, guessIndex: number, points: number]
+>;
+
+export type RoundEndedEvent = GenericEvent<ServerEventKind.ROUND_ENDED, [secret: string]>;
+
+export type ChatMessageEvent = GenericEvent<
+  ServerEventKind.CHAT_MESSAGE,
+  [playerId: string, message: string]
+>;
+
+export type DrawingUpdateEvent = GenericEvent<
+  ServerEventKind.DRAWING_UPDATE,
+  [continueFlag: number, x: number, y: number, size: number, color: string]
+>;
+
+export type ClueUpdateEvent = GenericEvent<ServerEventKind.CLUE_UPDATE, [newClue: string]>;
+
+export type GameEndedEvent = GenericEvent<ServerEventKind.GAME_ENDED, []>;
+
+export type AnyServerEvent =
+  | AsyncResponseEvent
+  | PlayerJoinedEvent
+  | PlayerLeftEvent
+  | RoundStartedEvent
+  | DrawingStartedEvent
+  | CorrectGuessEvent
+  | RoundEndedEvent
+  | ChatMessageEvent
+  | DrawingUpdateEvent
+  | ClueUpdateEvent
+  | GameEndedEvent;
+
+/**
+ * DB TYPES
+ */
+
 export const enum GamePhase {
   Waiting = "WAITING",
   Choosing = "CHOOSING",
@@ -11,7 +188,7 @@ export const enum GamePhase {
 export type ProfileModel = {
   id: string;
   username: string;
-  avatarUrl: string;
+  avatarUrl: string | null;
   moderator: boolean;
   subscriber: boolean;
 };
@@ -24,12 +201,11 @@ export type TopicModel = {
   general: boolean;
   nsfw: boolean;
   creator: string;
-  createdAt: string;
 };
 
 export type WordModel = {
-  word: string;
   topic: string;
+  word: string;
 };
 
 export type GameModel = {
@@ -50,137 +226,39 @@ export type PlayerModel = {
   id: string;
   game: string;
   username: string;
-  avatarUrl: string;
+  avatarUrl: string | null;
   score: number | null;
   guessIndex: number | null;
 };
 
-export const enum ClientEvent {
-  CREATE_GAME = "CG",
-  JOIN_GAME = "JG",
-  START_GAME = "SG",
-  CHOOSE_WORD = "CW",
-  DRAWING_UPDATE = "DU",
-  CHAT_MESSAGE = "CM",
-  MAKE_GUESS = "MG",
-}
+/**
+ * Utility types
+ */
 
-export const enum DrawingUpdateKind {
-  Start = "S",
-  Continue = "C",
-}
-
-export type ClientEventSignatures = {
-  [ClientEvent.CREATE_GAME]: [
-    asyncId: string,
-    topicId: string,
-    drawingTime: string,
-    rounds: string
-  ];
-  [ClientEvent.JOIN_GAME]: [asyncId: string, gameId: string];
-  [ClientEvent.START_GAME]: [];
-  [ClientEvent.CHOOSE_WORD]: [word: string];
-  [ClientEvent.DRAWING_UPDATE]: [
-    kind: DrawingUpdateKind,
-    x: string,
-    y: string,
-    size: string,
-    color: string
-  ];
-  [ClientEvent.CHAT_MESSAGE]: [message: string];
-  [ClientEvent.MAKE_GUESS]: [guess: string];
+type GenericEvent<
+  K extends ServerEventKind | ClientEventKind,
+  P extends (string | number | null)[]
+> = {
+  kind: K;
+  payload: P;
 };
 
-export const enum ServerEvent {
-  ASYNC_RESPONSE = "AR",
-  PLAYER_JOINED = "PJ",
-  PLAYER_LEFT = "PL",
-  ROUND_STARTED = "GS",
-  DRAWING_STARTED = "DS",
-  CORRECT_GUESS = "CG",
-  ROUND_ENDED = "RE",
-  GAME_ENDED = "GE",
-  CHAT_MESSAGE = "CM",
-  DRAWING_UPDATE = "DU",
-}
-
-export type ServerEventSignatures = {
-  [ServerEvent.ASYNC_RESPONSE]: [asyncId: string, json: string];
-  [ServerEvent.PLAYER_JOINED]: [
-    playerId: string,
-    playerName: string,
-    avatarUrl: string
-  ];
-  [ServerEvent.PLAYER_LEFT]: [playerId: string];
-  [ServerEvent.ROUND_STARTED]: [
-    artistId: string,
-    round: string,
-    choices?: string
-  ];
-  [ServerEvent.DRAWING_STARTED]: [clue: string, secret?: string];
-  [ServerEvent.CORRECT_GUESS]: [
-    playerId: string,
-    guessIndex: string,
-    newScore: string
-  ];
-  [ServerEvent.ROUND_ENDED]: [secret: string];
-  [ServerEvent.GAME_ENDED]: [];
-  [ServerEvent.CHAT_MESSAGE]: [senderId: string, contents: string];
-  [ServerEvent.DRAWING_UPDATE]: [
-    kind: DrawingUpdateKind,
-    x: string,
-    y: string,
-    size: string,
-    color: string
-  ];
-};
-
+/**
+ * Game->players join query
+ */
 export type GameState = GameModel & {
   players: Player[];
 };
 
+/**
+ * PlayerModel but with omitted reference to game_id
+ * since we almost never need it
+ */
 export type Player = Omit<PlayerModel, "game">;
 
-export const topicSchema = z.object({
-  name: z
-    .string()
-    .min(4, "Name must contain at least 4 characters.")
-    .max(60, "Name can't contain more than 50 characters."),
-  words: z
-    .array(
-      z
-        .string()
-        .min(2, "Words need to have at least 2 characters.")
-        .max(32, "Words can't be longer than 32 characters.")
-    )
-    .min(9, "At least 9 words are required.")
-    .max(512, "Playlist can't have more than 512 words")
-    .superRefine((arr, ctx) => {
-      const item = arr.find((val) => arr.indexOf(val) !== arr.lastIndexOf(val));
-
-      if (item !== undefined) {
-        const startIndex = arr.indexOf(item);
-        const endIndex = arr.lastIndexOf(item);
-
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `List contains duplicate word "${item}".`,
-        });
-
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Duplicate of word ${endIndex + 1}.`,
-          path: [startIndex],
-        });
-
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Duplicate of word ${startIndex + 1}.`,
-          path: [endIndex],
-        });
-      }
-    }),
-  nsfw: z.boolean(),
-  unlisted: z.boolean(),
-  thumbnail: z.string({ invalid_type_error: "This field is required." }),
-});
+/**
+ * Topic with joined words
+ */
+export type TopicWithWords = TopicModel & {
+  words: string[];
+};

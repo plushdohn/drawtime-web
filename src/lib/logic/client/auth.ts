@@ -1,9 +1,4 @@
-import {
-  derived,
-  get as getStoreValue,
-  readable,
-  type Readable,
-} from "svelte/store";
+import { derived, get as getStoreValue, readable, type Readable } from "svelte/store";
 import type { ProfileModel } from "../shared";
 import type { User } from "@supabase/supabase-js";
 import { supabaseClient } from "./supabase";
@@ -16,22 +11,18 @@ type AuthStore = {
 const initialSession = supabaseClient.auth.session();
 
 export const authStore = readable<AuthStore>(
-  initialSession
-    ? { user: initialSession.user!, accessToken: initialSession.access_token }
-    : null,
+  initialSession ? { user: initialSession.user!, accessToken: initialSession.access_token } : null,
   (set) => {
-    const { data: sub } = supabaseClient.auth.onAuthStateChange(
-      (event, session) => {
-        if (session) {
-          set({
-            user: session.user!,
-            accessToken: session.access_token,
-          });
-        } else {
-          set(null);
-        }
+    const { data: sub } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        set({
+          user: session.user!,
+          accessToken: session.access_token,
+        });
+      } else {
+        set(null);
       }
-    );
+    });
 
     return () => {
       if (sub) sub.unsubscribe();
@@ -48,10 +39,7 @@ type UserProfileStore = {
 export const userProfileStore = derived<Readable<AuthStore>, UserProfileStore>(
   authStore,
   ($authStore, set) => {
-    if (
-      $authStore !== null &&
-      getStoreValue(userProfileStore).profile === null
-    ) {
+    if ($authStore !== null && getStoreValue(userProfileStore).profile === null) {
       supabaseClient
         .from<ProfileModel>("profiles")
         .select("*")
@@ -80,9 +68,7 @@ export const signInWithGoogle = async (redirect?: string) => {
       provider: "google",
     },
     {
-      redirectTo: `${window.location.origin}/login-success${
-        redirect ? `?next=${redirect}` : ""
-      }`,
+      redirectTo: `${window.location.origin}/login-success${redirect ? `?next=${redirect}` : ""}`,
     }
   );
 

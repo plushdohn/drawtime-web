@@ -6,7 +6,7 @@
   import { z } from "zod";
   import CreationModal from "./Modal.svelte";
   import axios from "axios";
-  import { topicSchema } from "$lib/logic/shared";
+  import { createTopicSchema } from "$lib/logic/shared";
   import TopicThumbnail from "../TopicThumbnail.svelte";
 
   export let authToken: string;
@@ -19,7 +19,7 @@
   };
 
   const { form, errors, validate, handleSubmit } = createForm(
-    topicSchema.extend({
+    createTopicSchema().extend({
       captcha: z.string(),
     }),
     {

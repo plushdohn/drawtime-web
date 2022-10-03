@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { PUBLIC_RECAPTCHA_SITE_KEY } from "$env/static/public";
+  import { browser } from "$app/environment";
 
   export let callback: (token: string | null) => void;
 
@@ -24,16 +25,18 @@
   });
 
   onDestroy(() => {
-    // @ts-ignore
-    window.handleCaptchaCallback = null;
+    if (browser) {
+      // @ts-ignore
+      window.handleCaptchaCallback = null;
 
-    // @ts-ignore
-    window.handleCaptchaRejection = null;
+      // @ts-ignore
+      window.handleCaptchaRejection = null;
+    }
   });
 </script>
 
 <svelte:head>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script src="https://www.google.com/recaptcha/api.js" async></script>
 </svelte:head>
 
 <div

@@ -6,13 +6,13 @@
   import { z } from "zod";
   import CreationModal from "./Modal.svelte";
   import axios from "axios";
-  import { topicSchema } from "$lib/logic/shared";
+  import { createTopicSchema } from "$lib/logic/shared";
   import DeleteSweepIcon from "../icons/DeleteSweepIcon.svelte";
 
   export let authToken: string;
 
   const { form, errors, validate, handleSubmit } = createForm(
-    topicSchema.extend({
+    createTopicSchema().extend({
       captcha: z.string(),
     }),
     {
@@ -70,10 +70,7 @@
   const onBatchAddWords = () => {
     if (!wordsBatchInputValue) return;
 
-    $form.words = [
-      ...$form.words,
-      ...wordsBatchInputValue.split(",").map((w) => w.trim()),
-    ];
+    $form.words = [...$form.words, ...wordsBatchInputValue.split(",").map((w) => w.trim())];
 
     wordsBatchInputValue = "";
 
@@ -117,9 +114,7 @@
 <form class="flex flex-col max-w-2xl w-full">
   <span class="text-white font-bold text-5xl">Create a topic</span>
 
-  <label for="name" class="text-zinc-300 font-bold mt-8 text-xl mb-2">
-    Name
-  </label>
+  <label for="name" class="text-zinc-300 font-bold mt-8 text-xl mb-2">Name</label>
   <input
     autocomplete="off"
     name="name"
@@ -138,8 +133,7 @@
 
   <span class="text-zinc-300 font-bold mt-8 text-xl">Words</span>
   <span class="text-zinc-300 mb-2">
-    There are currently {$form.words.length} word(s), the maximum for normal users
-    is 100.
+    There are currently {$form.words.length} word(s), the maximum for normal users is 100.
   </span>
   <div
     class="flex flex-col bg-zinc-800 rounded-sm p-3 border-red-500"
@@ -217,19 +211,12 @@
     </button>
   </div>
 
-  <label for="thumbnail" class="text-zinc-300 font-bold mt-8 text-xl mb-2">
-    Thumbnail
-  </label>
+  <label for="thumbnail" class="text-zinc-300 font-bold mt-8 text-xl mb-2">Thumbnail</label>
   <div
     class="p-3 bg-zinc-800 flex flex-col rounded-sm border-red-500"
     class:border-2={$errors.thumbnail}
   >
-    <input
-      name="thumbnail"
-      type="file"
-      accept=".png, .jpg, .jpeg"
-      on:change={onFileChange}
-    />
+    <input name="thumbnail" type="file" accept=".png, .jpg, .jpeg" on:change={onFileChange} />
     {#if $form.thumbnail !== null}
       <img
         src={$form.thumbnail}
@@ -237,8 +224,8 @@
         alt="Playlist thumbnail"
       />
       <span class="text-xs text-center text-zinc-300 mt-2 self-center">
-        This is how your thumbnail will appear, if there are cropping issues
-        please use a 16:9 image.
+        This is how your thumbnail will appear, if there are cropping issues please use a 16:9
+        image.
       </span>
     {/if}
   </div>
@@ -250,8 +237,7 @@
 
   <label for="nsfw" class="text-zinc-300 font-bold mt-8 text-xl">NSFW</label>
   <span class="text-zinc-300 mb-2">
-    Does your word list contain NSFW words? Even if there's only one, please
-    check this.
+    Does your word list contain NSFW words? Even if there's only one, please check this.
   </span>
   <input
     name="nsfw"
@@ -260,12 +246,10 @@
     bind:checked={$form.nsfw}
   />
 
-  <label for="unlisted" class="text-zinc-300 font-bold mt-8 text-xl">
-    Unlisted
-  </label>
+  <label for="unlisted" class="text-zinc-300 font-bold mt-8 text-xl">Unlisted</label>
   <span class="text-zinc-300 mb-2">
-    If you check this, your playlist will not be indexed and cannot appear in
-    the home page. It will only be accessed via direct link.
+    If you check this, your playlist will not be indexed and cannot appear in the home page. It will
+    only be accessed via direct link.
   </span>
   <input
     name="unlisted"
@@ -281,9 +265,7 @@
     }`}
   />
   {#if $errors.captcha}
-    <span class="text-zinc-400 text-sm text-red-500 mt-2">
-      Please complete the captcha.
-    </span>
+    <span class="text-zinc-400 text-sm text-red-500 mt-2">Please complete the captcha.</span>
   {/if}
 
   <button
@@ -295,10 +277,6 @@
   </button>
 
   {#if creationError || creationPending}
-    <CreationModal
-      error={creationError}
-      onClose={handleModalClosure}
-      onRetry={handleSubmit}
-    />
+    <CreationModal error={creationError} onClose={handleModalClosure} onRetry={handleSubmit} />
   {/if}
 </form>

@@ -22,6 +22,7 @@ export function createForm<T extends AnyZodObject>(
   },
   params?: {
     onSubmit?: (values: z.infer<T>) => void;
+    onlyValidateAfterFirstSubmit?: boolean;
   }
 ) {
   const form = writable(initialValues);
@@ -48,9 +49,7 @@ export function createForm<T extends AnyZodObject>(
 
     const currentErrors = getStoreValue(errors);
 
-    const nestedKeys = Object.keys(currentErrors).filter((k) =>
-      k.startsWith(rootKey)
-    );
+    const nestedKeys = Object.keys(currentErrors).filter((k) => k.startsWith(rootKey));
 
     const updates: {
       [key: string]: string;
@@ -81,13 +80,36 @@ export function createForm<T extends AnyZodObject>(
     errors.update((s) => ({ ...(omit(s, nestedKeys) as any), ...updates }));
   }
 
-  function validateAll() {
+  function clearValidation(field: string) {
+    errors.update((s) => {
+      const nestedKeys = Object.keys(s).filter((k) => k.startsWith(field));
+      return omit(s, [field, ...nestedKeys]) as any;
+    });
+  }
+
+  function validate(field: string | Event) {
+    if (submitted || !params || !params.onlyValidateAfterFirstSubmit) {
+      if (typeof field === "string") {
+        validateFromKey(field);
+      } else if (field instanceof Event) {
+        validateFromEvent(field);
+      }
+    }
+  }
+
+  function handleSubmit() {
+    submitted = true;
+
     const values = getStoreValue(form);
 
     const parseResult = schema.safeParse(values);
 
     if (parseResult.success) {
       errors.set({});
+
+      if (params && params.onSubmit) {
+        params.onSubmit(values as z.infer<T>);
+      }
     } else {
       const { issues } = parseResult.error;
 
@@ -110,39 +132,6 @@ export function createForm<T extends AnyZodObject>(
       }
 
       errors.set(updates as any);
-    }
-  }
-
-  function clearValidation(field: string) {
-    errors.update((s) => {
-      const nestedKeys = Object.keys(s).filter((k) => k.startsWith(field));
-      return omit(s, [field, ...nestedKeys]) as any;
-    });
-  }
-
-  function validate(field: string | Event) {
-    if (submitted) {
-      if (typeof field === "string") {
-        validateFromKey(field);
-      } else if (field instanceof Event) {
-        validateFromEvent(field);
-      }
-    }
-  }
-
-  function handleSubmit() {
-    validateAll();
-
-    submitted = true;
-
-    if (params && params.onSubmit) {
-      const currentErrors = getStoreValue(errors);
-
-      if (Object.keys(currentErrors).length === 0) {
-        const values = getStoreValue(form);
-
-        params.onSubmit(values as z.infer<T>);
-      }
     }
   }
 

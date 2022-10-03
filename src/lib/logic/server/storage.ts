@@ -18,3 +18,17 @@ export const uploadTopicThumbs = async (
     }),
   ]);
 };
+
+export async function uploadProfilePicture(userId: string, picture: Buffer) {
+  const bucket = supabaseServer.storage.from("public");
+
+  const path = `images/avatars/${userId}/128.jpg`;
+
+  const { error } = await bucket.upload(path, picture, {
+    contentType: "image/jpeg",
+  });
+
+  if (error) throw error;
+
+  return bucket.getPublicUrl(path).publicURL as string;
+}
