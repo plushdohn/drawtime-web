@@ -263,3 +263,7 @@ export type Player = Omit<PlayerModel, "game">;
 export type TopicWithWords = TopicModel & {
   words: string[];
 };
+
+export type TopicWithCreator = TopicModel & {
+  creator: ProfileModel;
+};

@@ -1,24 +1,28 @@
-import { supabaseClient } from "$lib/logic/client/supabase";
-import type { TopicModel } from "$lib/logic/shared";
-import { error, type Load } from "@sveltejs/kit";
+import { supabaseServer } from "$lib/logic/server/supabase";
+import type { TopicWithCreator } from "$lib/logic/shared";
+import { error } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
 
-export const load: Load = async () => {
+export const load: PageServerLoad = async ({ setHeaders }) => {
   const [
     { data: generalTopics, error: generalErr },
     { data: trendingTopics, error: trendingErr },
     { data: newTopics, error: newErr },
   ] = await Promise.all([
-    supabaseClient.from<TopicModel>("topics").select("*").eq("general", true),
-    supabaseClient
-      .from<TopicModel>("topics")
-      .select("*")
+    supabaseServer
+      .from<TopicWithCreator>("topics")
+      .select("*, creator (username)")
+      .eq("general", true),
+    supabaseServer
+      .from<TopicWithCreator>("topics")
+      .select("*, creator (username)")
       .eq("general", false)
       .eq("unlisted", false)
       .order("plays")
       .limit(10),
-    supabaseClient
-      .from<TopicModel>("topics")
-      .select("*")
+    supabaseServer
+      .from<TopicWithCreator>("topics")
+      .select("*, creator (username)")
       .eq("general", false)
       .eq("unlisted", false)
       .order("createdAt")
