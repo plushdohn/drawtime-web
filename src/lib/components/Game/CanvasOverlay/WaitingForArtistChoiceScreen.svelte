@@ -8,9 +8,7 @@
   $: artistName = players.find((p) => p.id === artist)?.username;
 </script>
 
-<div
-  class="p-16 bg-zinc-800 rounded flex flex-col items-center text-center max-w-sm"
->
+<div class="relative p-16 bg-zinc-800 rounded flex flex-col items-center text-center max-w-sm">
   <span class="font-bold text-3xl leading-relaxed">
     {artistName} is choosing...
   </span>

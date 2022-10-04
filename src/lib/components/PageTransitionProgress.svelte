@@ -3,7 +3,7 @@
 </script>
 
 {#if $navigating}
-  <div class="absolute inset-0 bg-yellow-500 animate-w-scale h-1" />
+  <div class="absolute inset-0 bg-yellow-500 animate-w-scale h-1 z-20" />
 {/if}
 
 <style scoped>

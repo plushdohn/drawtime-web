@@ -127,7 +127,20 @@ export function onCorrectGuess(playerId: string, guessIndex: number, points: num
   update((s) => ({
     ...s,
     players: s.players.map((p) => {
-      if (p.id !== playerId) return p;
+      if (p.id !== playerId) {
+        /**
+         * If this was the first guess of the round,
+         * we also update artist's score
+         **/
+        if (guessIndex === 0 && p.id === s.artist) {
+          return {
+            ...p,
+            score: (p.score ?? 0) + points,
+          };
+        }
+
+        return p;
+      }
 
       return {
         ...p,

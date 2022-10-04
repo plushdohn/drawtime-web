@@ -31,7 +31,11 @@
   >
     {#if hovered}
       <span class="text-zinc-300 text-sm" transition:slide|local={{ duration: 200 }}>
-        by <span class="font-semibold">{topic.creator.username}</span>
+        {#if topic.general}
+          <span class="font-bold text-yellow-400">OFFICIAL</span>
+        {:else}
+          by <span class="font-semibold">{topic.creator.username}</span>
+        {/if}
         <br />
         {topic.plays} plays
       </span>
