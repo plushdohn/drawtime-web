@@ -4,8 +4,9 @@
   import ResetDrawingButton from "./ResetDrawingButton.svelte";
   import ColorPicker from "./ColorPicker.svelte";
   import GameTimer from "../GameTimer.svelte";
-  import { GamePhase, type GameState } from "$lib/logic/shared";
-  import { DrawingUpdateKind, updateDrawing } from "$lib/logic/client/live/drawing";
+  import { DrawingUpdateKind, GamePhase, type GameState } from "$lib/logic/shared";
+  import { updateDrawing } from "$lib/logic/client/live/drawing";
+  import { throttle } from "lodash";
 
   export let game: GameState;
   export let socket: WebSocket;
@@ -52,15 +53,15 @@
       });
     }
 
-    function onPointerUp(event: PointerEvent) {
+    function onPointerUp() {
       node.removeEventListener("pointermove", onPointerMove);
     }
 
-    function onPointerLeave(event: PointerEvent) {
+    function onPointerLeave() {
       node.removeEventListener("pointermove", onPointerMove);
     }
 
-    function onPointerMove(event: PointerEvent) {
+    const onPointerMove = throttle((event: PointerEvent) => {
       const { x, y } = getScaleAdjustedCoordinates(node, event);
 
       ctx.lineTo(x, y);
@@ -73,7 +74,7 @@
         size: 1,
         color,
       });
-    }
+    }, 15);
 
     node.addEventListener("pointerdown", onPointerDown);
 

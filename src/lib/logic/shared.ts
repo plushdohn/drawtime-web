@@ -80,9 +80,15 @@ export type ChooseWordEvent = GenericEvent<ClientEventKind.CHOOSE_WORD, [choice:
 
 export type MakeGuessEvent = GenericEvent<ClientEventKind.MAKE_GUESS, [guess: string]>;
 
+export enum DrawingUpdateKind {
+  START,
+  CONTINUE,
+  EMPTY,
+}
+
 export type UpdateDrawingEvent = GenericEvent<
   ClientEventKind.UPDATE_DRAWING,
-  [continueFlag: number, x: number, y: number, size: number, color: string]
+  [kind: DrawingUpdateKind, x: number, y: number, size: number, color: string]
 >;
 
 export type SendChatMessageEvent = GenericEvent<
@@ -153,7 +159,7 @@ export type ChatMessageEvent = GenericEvent<
 
 export type DrawingUpdateEvent = GenericEvent<
   ServerEventKind.DRAWING_UPDATE,
-  [continueFlag: number, x: number, y: number, size: number, color: string]
+  [kind: DrawingUpdateKind, x: number, y: number, size: number, color: string]
 >;
 
 export type ClueUpdateEvent = GenericEvent<ServerEventKind.CLUE_UPDATE, [newClue: string]>;

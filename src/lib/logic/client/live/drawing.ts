@@ -1,5 +1,10 @@
-import { ClientEventKind } from "$lib/logic/shared";
-import { sendClientEvent } from "./socket";
+import {
+  ClientEventKind,
+  DrawingUpdateKind,
+  ServerEventKind,
+  type DrawingUpdateEvent,
+} from "$lib/logic/shared";
+import { registerListenerToSpecificSocketEvent, sendClientEvent } from "./socket";
 
 type DrawingUpdate = {
   kind: DrawingUpdateKind;
@@ -9,37 +14,21 @@ type DrawingUpdate = {
   color: string;
 };
 
-type Listener = (data: DrawingUpdate) => void;
+export function subscribeToDrawingUpdates(listener: (update: DrawingUpdate) => any) {
+  return registerListenerToSpecificSocketEvent<DrawingUpdateEvent>(
+    ServerEventKind.DRAWING_UPDATE,
+    (payload) => {
+      const [kind, x, y, size, color] = payload;
 
-export enum DrawingUpdateKind {
-  START,
-  CONTINUE,
-}
-
-let listener: Listener | null = null;
-
-export function onDrawingUpdate(
-  kindAsNumber: number,
-  x: number,
-  y: number,
-  size: number,
-  color: string
-) {
-  if (listener !== null) {
-    listener({
-      kind: kindAsNumber === 1 ? DrawingUpdateKind.CONTINUE : DrawingUpdateKind.START,
-      x,
-      y,
-      size,
-      color,
-    });
-  }
-}
-
-export function subscribeToDrawingUpdates(callback: Listener) {
-  listener = callback;
-
-  return () => (listener = null);
+      listener({
+        kind,
+        x,
+        y,
+        size,
+        color,
+      });
+    }
+  );
 }
 
 export function updateDrawing(

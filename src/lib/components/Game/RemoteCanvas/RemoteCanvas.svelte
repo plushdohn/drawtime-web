@@ -1,6 +1,13 @@
 <script lang="ts">
-  import { DrawingUpdateKind, subscribeToDrawingUpdates } from "$lib/logic/client/live/drawing";
-  import { GamePhase, type GameState } from "$lib/logic/shared";
+  import { subscribeToDrawingUpdates } from "$lib/logic/client/live/drawing";
+  import { registerListenerToSpecificSocketEvent } from "$lib/logic/client/live/socket";
+  import {
+    DrawingUpdateKind,
+    GamePhase,
+    type RoundStartedEvent,
+    ServerEventKind,
+    type GameState,
+  } from "$lib/logic/shared";
   import CanvasOverlay from "../CanvasOverlay/CanvasOverlay.svelte";
   import Clue from "../Clue.svelte";
   import GameTimer from "../GameTimer.svelte";
@@ -9,15 +16,22 @@
   export let userId: string;
   export let socket: WebSocket;
 
-  let canvas: HTMLCanvasElement | null = null;
+  function clearOnRoundChange(node: HTMLCanvasElement) {
+    const ctx = node.getContext("2d") as CanvasRenderingContext2D;
 
-  $: if (game.phase === GamePhase.Drawing) {
-    if (canvas !== null) {
-      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+    const unsub = registerListenerToSpecificSocketEvent<RoundStartedEvent>(
+      ServerEventKind.ROUND_STARTED,
+      () => {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, node.width, node.height);
+      }
+    );
 
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    return {
+      destroy() {
+        unsub();
+      },
+    };
   }
 
   function remoteDrawing(node: HTMLCanvasElement) {
@@ -28,9 +42,12 @@
         ctx.beginPath();
         ctx.moveTo(update.x, update.y);
         ctx.strokeStyle = update.color;
-      } else {
+      } else if (update.kind === DrawingUpdateKind.CONTINUE) {
         ctx.lineTo(update.x, update.y);
         ctx.stroke();
+      } else if (update.kind === DrawingUpdateKind.EMPTY) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, node.width, node.height);
       }
     });
 
@@ -45,11 +62,11 @@
 <div class="relative flex flex-col h-full">
   <Clue {...game} {userId} />
   <canvas
-    bind:this={canvas}
     class="h-[88%] bg-white aspect-square"
     width="512"
     height="512"
     use:remoteDrawing
+    use:clearOnRoundChange
   />
   <div class="w-full bg-white" style="height: 6%;" />
 

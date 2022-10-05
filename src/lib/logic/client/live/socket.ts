@@ -1,20 +1,7 @@
 import { PUBLIC_GAMESERVER_URL } from "$env/static/public";
 import { writable } from "svelte/store";
-import { handleAsyncResponse } from "./async";
 import { decodeEvent, encodeEvent } from "./dan";
-import { onDrawingUpdate } from "./drawing";
-import {
-  onClueUpdate,
-  onCorrectGuess,
-  onDrawingStarted,
-  onGameEnded,
-  onPlayerJoined,
-  onPlayerLeft,
-  onRoundEnded,
-  onRoundStarted,
-} from "./game";
-import { ServerEventKind, type AnyClientEvent, type AnyServerEvent } from "$lib/logic/shared";
-import { onChatMessage, onCorrectGuess as onChatCorrectGuess } from "./chat";
+import type { AnyClientEvent, AnyServerEvent } from "$lib/logic/shared";
 
 type GameServerConnectionStore = {
   pending: boolean;
@@ -76,34 +63,31 @@ export function sendClientEvent(socket: WebSocket, event: AnyClientEvent) {
   console.log(encoded);
 }
 
+type SocketListener = (event: AnyServerEvent) => any;
+
+let socketListeners: Set<SocketListener> = new Set();
+
+export function registerSocketEventsListener(listener: SocketListener) {
+  socketListeners.add(listener);
+
+  return () => {
+    socketListeners.delete(listener);
+  };
+}
+
+export function registerListenerToSpecificSocketEvent<T extends AnyServerEvent>(
+  event: T["kind"],
+  listener: (payload: T["payload"]) => any
+) {
+  return registerSocketEventsListener((e) => {
+    if (e.kind === event) {
+      listener(e.payload);
+    }
+  });
+}
+
 function handleMessage(message: string) {
   const data = decodeEvent(message) as AnyServerEvent;
 
-  switch (data.kind) {
-    case ServerEventKind.ASYNC_RESPONSE:
-      return handleAsyncResponse(...data.payload);
-    case ServerEventKind.PLAYER_JOINED:
-      return onPlayerJoined(...data.payload);
-    case ServerEventKind.PLAYER_LEFT:
-      return onPlayerLeft(...data.payload);
-    case ServerEventKind.ROUND_STARTED:
-      return onRoundStarted(...data.payload);
-    case ServerEventKind.DRAWING_STARTED:
-      return onDrawingStarted(...data.payload);
-    case ServerEventKind.CORRECT_GUESS:
-      onChatCorrectGuess(data.payload[0]);
-      return onCorrectGuess(...data.payload);
-    case ServerEventKind.CLUE_UPDATE:
-      return onClueUpdate(...data.payload);
-    case ServerEventKind.ROUND_ENDED:
-      return onRoundEnded(...data.payload);
-    case ServerEventKind.GAME_ENDED:
-      return onGameEnded(...data.payload);
-    case ServerEventKind.DRAWING_UPDATE:
-      return onDrawingUpdate(...data.payload);
-    case ServerEventKind.CHAT_MESSAGE:
-      return onChatMessage(...data.payload);
-  }
-
-  const _exhaustiveCheck: never = data;
+  socketListeners.forEach((listener) => listener(data));
 }

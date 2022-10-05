@@ -1,5 +1,5 @@
-import { ClientEventKind } from "$lib/logic/shared";
-import { sendClientEvent } from "./socket";
+import { ClientEventKind, ServerEventKind } from "$lib/logic/shared";
+import { registerSocketEventsListener, sendClientEvent } from "./socket";
 
 export enum ChatEventKind {
   MESSAGE = "MESSAGE",
@@ -21,25 +21,27 @@ type CorrectGuess = {
 
 export type AnyChatEvent = ChatMessage | CorrectGuess;
 
-type Listener = (data: AnyChatEvent) => void;
+export function subscribeToChatEvents(listener: (chatEvent: AnyChatEvent) => any) {
+  return registerSocketEventsListener((event) => {
+    if (event.kind === ServerEventKind.CHAT_MESSAGE) {
+      const [senderId, contents] = event.payload;
 
-let listener: Listener | null = null;
+      listener({
+        kind: ChatEventKind.MESSAGE,
+        payload: {
+          senderId,
+          contents,
+        },
+      });
+    } else if (event.kind === ServerEventKind.CORRECT_GUESS) {
+      const [playerId] = event.payload;
 
-export function subscribeToChatEvents(callback: Listener) {
-  listener = callback;
-
-  return () => (listener = null);
-}
-
-export function onChatMessage(senderId: string, contents: string) {
-  if (listener !== null)
-    listener({
-      kind: ChatEventKind.MESSAGE,
-      payload: {
-        senderId,
-        contents,
-      },
-    });
+      listener({
+        kind: ChatEventKind.CORRECT_GUESS,
+        payload: playerId,
+      });
+    }
+  });
 }
 
 export function sendChatMessage(socket: WebSocket, message: string) {
@@ -47,8 +49,4 @@ export function sendChatMessage(socket: WebSocket, message: string) {
     kind: ClientEventKind.SEND_CHAT_MESSAGE,
     payload: [message],
   });
-}
-
-export function onCorrectGuess(playerId: string) {
-  if (listener !== null) listener({ kind: ChatEventKind.CORRECT_GUESS, payload: playerId });
 }
