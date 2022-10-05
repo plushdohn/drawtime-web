@@ -13,7 +13,7 @@
   <span class="text-zinc-400">
     The word was
     <br />
-    <span class="text-yellow-500 text-xl uppercase font-bold">
+    <span class="text-yellow-400 text-xl uppercase font-semibold">
       {secret}
     </span>
   </span>

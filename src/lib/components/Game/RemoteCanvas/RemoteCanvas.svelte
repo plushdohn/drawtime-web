@@ -42,6 +42,7 @@
         ctx.beginPath();
         ctx.moveTo(update.x, update.y);
         ctx.strokeStyle = update.color;
+        ctx.lineWidth = update.size;
       } else if (update.kind === DrawingUpdateKind.CONTINUE) {
         ctx.lineTo(update.x, update.y);
         ctx.stroke();

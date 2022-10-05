@@ -7,12 +7,14 @@
   import { DrawingUpdateKind, GamePhase, type GameState } from "$lib/logic/shared";
   import { updateDrawing } from "$lib/logic/client/live/drawing";
   import { throttle } from "lodash";
+  import BrushSizeSelector from "./BrushSizeSelector.svelte";
 
   export let game: GameState;
   export let socket: WebSocket;
   export let userId: string;
 
   let color = "#000000";
+  let size = 1;
 
   function onColorChange(newColor: string) {
     color = newColor;
@@ -43,12 +45,13 @@
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.strokeStyle = color;
+      ctx.lineWidth = size;
 
       updateDrawing(socket, {
         kind: DrawingUpdateKind.START,
         x,
         y,
-        size: 1,
+        size,
         color,
       });
     }
@@ -71,10 +74,10 @@
         kind: DrawingUpdateKind.CONTINUE,
         x,
         y,
-        size: 1,
+        size,
         color,
       });
-    }, 15);
+    }, 10);
 
     node.addEventListener("pointerdown", onPointerDown);
 
@@ -91,6 +94,7 @@
   <canvas class="h-[88%] bg-white aspect-square" width="512" height="512" use:drawableCanvas />
   <div class="w-full bg-zinc-800 flex justify-between items-center p-2" style="height: 6%;">
     <ResetDrawingButton />
+    <BrushSizeSelector bind:value={size} />
     <ColorPicker callback={onColorChange} selectedColor={color} />
   </div>
 
