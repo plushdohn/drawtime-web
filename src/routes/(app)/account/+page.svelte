@@ -12,7 +12,7 @@
   let pending = false;
   let error: string | null = null;
 
-  const { form, errors, validate, handleSubmit } = createForm(
+  const { form, errors, validate, handleSubmit, valid } = createForm(
     z.object({
       username: z
         .string()
@@ -112,9 +112,8 @@
   <button
     type="button"
     on:click={handleSubmit}
-    class={` font-semibold p-2.5 rounded-sm mt-10 self-start flex items-center ${
-      changed ? "bg-red-500 text-white" : "disabled text-zinc-400 bg-zinc-700 cursor-not-allowed"
-    }`}
+    class={`font-semibold p-2.5 rounded-sm mt-10 self-start flex items-center bg-red-500 disabled:text-zinc-400 disabled:bg-zinc-700`}
+    disabled={!changed || !$valid}
   >
     <ApplyChangesIcon class="fill-current w-6 mr-2" />
     Apply changes

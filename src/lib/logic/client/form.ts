@@ -1,4 +1,4 @@
-import { get as getStoreValue, writable } from "svelte/store";
+import { derived, get as getStoreValue, writable } from "svelte/store";
 import type { AnyZodObject, ZodSchema, z } from "zod";
 import omit from "lodash/omit";
 
@@ -28,6 +28,7 @@ export function createForm<T extends AnyZodObject>(
   const form = writable(initialValues);
 
   const errors = writable<{ [key in keyof T | string]?: string }>({});
+  const valid = derived(errors, ($e) => Object.keys($e).length === 0);
 
   let submitted = false;
 
@@ -135,5 +136,5 @@ export function createForm<T extends AnyZodObject>(
     }
   }
 
-  return { form, errors, validate, handleSubmit, clearValidation };
+  return { form, errors, validate, handleSubmit, clearValidation, valid };
 }

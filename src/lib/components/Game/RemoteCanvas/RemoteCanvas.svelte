@@ -9,6 +9,17 @@
   export let userId: string;
   export let socket: WebSocket;
 
+  let canvas: HTMLCanvasElement | null = null;
+
+  $: if (game.phase === GamePhase.Drawing) {
+    if (canvas !== null) {
+      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
   function remoteDrawing(node: HTMLCanvasElement) {
     const ctx = node.getContext("2d") as CanvasRenderingContext2D;
 
@@ -33,7 +44,13 @@
 
 <div class="relative flex flex-col h-full">
   <Clue {...game} {userId} />
-  <canvas class="h-[88%] bg-white aspect-square" width="512" height="512" use:remoteDrawing />
+  <canvas
+    bind:this={canvas}
+    class="h-[88%] bg-white aspect-square"
+    width="512"
+    height="512"
+    use:remoteDrawing
+  />
   <div class="w-full bg-white" style="height: 6%;" />
 
   {#if game.phase === GamePhase.Drawing}
