@@ -12,29 +12,26 @@
   });
 
   const worstGuess = players.reduce((acc, curr) => {
-    if (curr.guessIndex !== null && curr.guessIndex > acc)
-      return curr.guessIndex;
+    if (curr.guessIndex !== null && curr.guessIndex > acc) return curr.guessIndex;
 
     return acc;
-  }, 0);
+  }, -1);
 </script>
 
 <div class="flex flex-col w-full">
   {#each sortedPlayers as player (player.id)}
-    <div
-      class="flex items-center w-full font-bold text-2xl py-2 whitespace-nowrap"
-    >
+    <div class="flex items-center w-full font-bold text-2xl py-2 whitespace-nowrap">
       <img src={player.avatarUrl} class="w-8 h-8 rounded-full mr-3" alt="" />
       <span class="text-white font-semibold text-base mr-8 w-full text-left">
         {player.username}
       </span>
       {#if player.id === artist}
-        {#if worstGuess === 0}
+        {#if worstGuess === -1}
           <span class="text-white">{player.score}</span>
         {:else}
-          <span class="text-green-400">{player.score} (+{worstGuess})</span>
+          <span class="text-green-400">{player.score}</span>
         {/if}
-      {:else if player.guessIndex === 0}
+      {:else if player.guessIndex === null}
         <span class="text-white">{player.score}</span>
       {:else}
         <span class="text-green-400">{player.score}</span>

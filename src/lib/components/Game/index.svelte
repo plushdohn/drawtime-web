@@ -7,6 +7,7 @@
   import Chat from "./Chat/Chat.svelte";
   import ArtistCanvas from "./ArtistCanvas/ArtistCanvas.svelte";
   import { joinGame, subscribeToGameUpdates } from "$lib/logic/client/live/game";
+  import AudioManager from "./AudioManager.svelte";
 
   export let socket: WebSocket;
   export let gameId: string;
@@ -50,6 +51,8 @@
       {userId}
       players={game.players}
     />
+
+    <AudioManager />
   </div>
 {:else}
   <div class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm">
