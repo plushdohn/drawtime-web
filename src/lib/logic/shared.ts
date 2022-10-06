@@ -66,34 +66,25 @@ export enum ClientEventKind {
 
 export type CreateGameEvent = GenericEvent<
   ClientEventKind.CREATE_GAME,
-  [asyncId: string, topicId: string, drawingTime: number, rounds: number]
+  { asyncId: string; topicId: string; drawingTime: number; rounds: number }
 >;
 
 export type JoinGameEvent = GenericEvent<
   ClientEventKind.JOIN_GAME,
-  [asyncId: string, gameId: string]
+  { asyncId: string; gameId: string }
 >;
 
-export type StartGameEvent = GenericEvent<ClientEventKind.START_GAME, []>;
+export type StartGameEvent = GenericEvent<ClientEventKind.START_GAME, undefined>;
 
-export type ChooseWordEvent = GenericEvent<ClientEventKind.CHOOSE_WORD, [choice: string]>;
+export type ChooseWordEvent = GenericEvent<ClientEventKind.CHOOSE_WORD, { choice: string }>;
 
-export type MakeGuessEvent = GenericEvent<ClientEventKind.MAKE_GUESS, [guess: string]>;
+export type MakeGuessEvent = GenericEvent<ClientEventKind.MAKE_GUESS, { guess: string }>;
 
-export enum DrawingUpdateKind {
-  START,
-  CONTINUE,
-  EMPTY,
-}
-
-export type UpdateDrawingEvent = GenericEvent<
-  ClientEventKind.UPDATE_DRAWING,
-  [kind: DrawingUpdateKind, x: number, y: number, size: number, color: string]
->;
+export type UpdateDrawingEvent = GenericEvent<ClientEventKind.UPDATE_DRAWING, AnyDrawingEvent>;
 
 export type SendChatMessageEvent = GenericEvent<
   ClientEventKind.SEND_CHAT_MESSAGE,
-  [message: string]
+  { message: string }
 >;
 
 export type AnyClientEvent =
@@ -125,46 +116,43 @@ export enum ServerEventKind {
 
 export type AsyncResponseEvent = GenericEvent<
   ServerEventKind.ASYNC_RESPONSE,
-  [asyncId: string, json: string]
+  { asyncId: string } & ({ body: any } | { error: string })
 >;
 
 export type PlayerJoinedEvent = GenericEvent<
   ServerEventKind.PLAYER_JOINED,
-  [id: string, name: string, avatarUrl: string | null]
+  { id: string; name: string; avatarUrl: string | null }
 >;
 
-export type PlayerLeftEvent = GenericEvent<ServerEventKind.PLAYER_LEFT, [playerId: string]>;
+export type PlayerLeftEvent = GenericEvent<ServerEventKind.PLAYER_LEFT, { playerId: string }>;
 
 export type RoundStartedEvent = GenericEvent<
   ServerEventKind.ROUND_STARTED,
-  [artistId: string, round: number, choices: string | null]
+  { artistId: string; round: number; choices: string | null }
 >;
 
 export type DrawingStartedEvent = GenericEvent<
   ServerEventKind.DRAWING_STARTED,
-  [clue: string, secret: string | null]
+  { clue: string; secret: string | null }
 >;
 
 export type CorrectGuessEvent = GenericEvent<
   ServerEventKind.CORRECT_GUESS,
-  [playerId: string, guessIndex: number, points: number]
+  { playerId: string; guessIndex: number; points: number }
 >;
 
-export type RoundEndedEvent = GenericEvent<ServerEventKind.ROUND_ENDED, [secret: string]>;
+export type RoundEndedEvent = GenericEvent<ServerEventKind.ROUND_ENDED, { secret: string }>;
 
 export type ChatMessageEvent = GenericEvent<
   ServerEventKind.CHAT_MESSAGE,
-  [playerId: string, message: string]
+  { playerId: string; message: string }
 >;
 
-export type DrawingUpdateEvent = GenericEvent<
-  ServerEventKind.DRAWING_UPDATE,
-  [kind: DrawingUpdateKind, x: number, y: number, size: number, color: string]
->;
+export type DrawingUpdateEvent = GenericEvent<ServerEventKind.DRAWING_UPDATE, AnyDrawingEvent>;
 
-export type ClueUpdateEvent = GenericEvent<ServerEventKind.CLUE_UPDATE, [newClue: string]>;
+export type ClueUpdateEvent = GenericEvent<ServerEventKind.CLUE_UPDATE, { newClue: string }>;
 
-export type GameEndedEvent = GenericEvent<ServerEventKind.GAME_ENDED, []>;
+export type GameEndedEvent = GenericEvent<ServerEventKind.GAME_ENDED, undefined>;
 
 export type AnyServerEvent =
   | AsyncResponseEvent
@@ -239,13 +227,38 @@ export type PlayerModel = {
 };
 
 /**
+ * Drawing events
+ */
+
+export enum DrawingEventKind {
+  Start,
+  Continue,
+  Clear,
+}
+
+export type DrawingStartEvent = {
+  kind: DrawingEventKind.Start;
+  sequence: { x: number; y: number }[];
+  size: number;
+  color: string;
+};
+
+export type DrawingContinueEvent = {
+  kind: DrawingEventKind.Continue;
+  sequence: { x: number; y: number }[];
+};
+
+export type DrawingClearEvent = {
+  kind: DrawingEventKind.Clear;
+};
+
+export type AnyDrawingEvent = DrawingStartEvent | DrawingContinueEvent | DrawingClearEvent;
+
+/**
  * Utility types
  */
 
-type GenericEvent<
-  K extends ServerEventKind | ClientEventKind,
-  P extends (string | number | null)[]
-> = {
+type GenericEvent<K extends ServerEventKind | ClientEventKind, P> = {
   kind: K;
   payload: P;
 };

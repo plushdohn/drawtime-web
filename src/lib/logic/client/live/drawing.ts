@@ -1,54 +1,23 @@
 import {
   ClientEventKind,
-  DrawingUpdateKind,
   ServerEventKind,
+  type AnyDrawingEvent,
   type DrawingUpdateEvent,
 } from "$lib/logic/shared";
 import { registerListenerToSpecificSocketEvent, sendClientEvent } from "./socket";
 
-type DrawingUpdate = {
-  kind: DrawingUpdateKind;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-};
-
-export function subscribeToDrawingUpdates(listener: (update: DrawingUpdate) => any) {
+export function subscribeToDrawingUpdates(listener: (event: AnyDrawingEvent) => any) {
   return registerListenerToSpecificSocketEvent<DrawingUpdateEvent>(
     ServerEventKind.DRAWING_UPDATE,
     (payload) => {
-      const [kind, x, y, size, color] = payload;
-
-      listener({
-        kind,
-        x,
-        y,
-        size,
-        color,
-      });
+      listener(payload);
     }
   );
 }
 
-export function updateDrawing(
-  socket: WebSocket,
-  update: {
-    kind: DrawingUpdateKind;
-    x: number;
-    y: number;
-    size: number;
-    color: string;
-  }
-) {
+export function updateDrawing<T extends AnyDrawingEvent>(socket: WebSocket, event: T) {
   sendClientEvent(socket, {
     kind: ClientEventKind.UPDATE_DRAWING,
-    payload: [
-      update.kind === DrawingUpdateKind.CONTINUE ? 1 : 0,
-      update.x,
-      update.y,
-      update.size,
-      update.color,
-    ],
+    payload: event,
   });
 }

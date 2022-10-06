@@ -19,22 +19,21 @@ export function sendAsyncEvent<T>(socket: WebSocket, asyncId: string, event: Any
     sendClientEvent(socket, event);
   });
 }
+
 let socketEventListener: (() => void) | null = null;
 
 function expectAsyncCallback<T>(asyncId: string, callback: Subscriber<T>) {
   if (socketEventListener === null) {
     socketEventListener = registerListenerToSpecificSocketEvent<AsyncResponseEvent>(
       ServerEventKind.ASYNC_RESPONSE,
-      ([asyncId, json]) => {
-        const response = JSON.parse(json) as Response<any>;
-
+      ({ asyncId, ...payload }) => {
         const callback = subscribers.get(asyncId);
 
         if (!callback) {
           return console.error("Server responded to an async callback that doesn't exist");
         }
 
-        callback(response);
+        callback(payload);
 
         subscribers.delete(asyncId);
 

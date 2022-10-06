@@ -1,6 +1,5 @@
 import { PUBLIC_GAMESERVER_URL } from "$env/static/public";
 import { writable } from "svelte/store";
-import { decodeEvent, encodeEvent } from "./dan";
 import type { AnyClientEvent, AnyServerEvent } from "$lib/logic/shared";
 
 type GameServerConnectionStore = {
@@ -56,7 +55,7 @@ export const connectToGameServer = (authToken: string) => {
 };
 
 export function sendClientEvent(socket: WebSocket, event: AnyClientEvent) {
-  const encoded = encodeEvent(event.kind, event.payload);
+  const encoded = JSON.stringify(event);
   socket.send(encoded);
 
   console.log("FIRED SOCKET EVENT:");
@@ -87,7 +86,7 @@ export function registerListenerToSpecificSocketEvent<T extends AnyServerEvent>(
 }
 
 function handleMessage(message: string) {
-  const data = decodeEvent(message) as AnyServerEvent;
+  const data = JSON.parse(message) as AnyServerEvent;
 
   socketListeners.forEach((listener) => listener(data));
 }

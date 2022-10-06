@@ -4,7 +4,13 @@
   import ResetDrawingButton from "./ResetDrawingButton.svelte";
   import ColorPicker from "./ColorPicker.svelte";
   import GameTimer from "../GameTimer.svelte";
-  import { DrawingUpdateKind, GamePhase, type GameState } from "$lib/logic/shared";
+  import {
+    DrawingEventKind,
+    type DrawingStartEvent,
+    GamePhase,
+    type DrawingContinueEvent,
+    type GameState,
+  } from "$lib/logic/shared";
   import { updateDrawing } from "$lib/logic/client/live/drawing";
   import { throttle } from "lodash";
   import BrushSizeSelector from "./BrushSizeSelector.svelte";
@@ -20,7 +26,36 @@
     color = newColor;
   }
 
-  const drawableCanvas = (node: HTMLCanvasElement) => {
+  function drawableCanvas(node: HTMLCanvasElement) {
+    let currentEvent: DrawingStartEvent | DrawingContinueEvent | null = null;
+
+    function beginNewEvent(evt: DrawingStartEvent | DrawingContinueEvent) {
+      if (currentEvent !== null) {
+        updateDrawing(socket, currentEvent);
+      }
+
+      currentEvent = evt;
+    }
+
+    function addToEventSequence(coords: { x: number; y: number }) {
+      if (currentEvent === null) {
+        currentEvent = {
+          kind: DrawingEventKind.Continue,
+          sequence: [coords],
+        };
+      } else {
+        currentEvent = { ...currentEvent, sequence: [...currentEvent.sequence, coords] };
+      }
+    }
+
+    const updateInterval = setInterval(() => {
+      if (currentEvent !== null) {
+        updateDrawing(socket, currentEvent);
+
+        currentEvent = null;
+      }
+    }, 100);
+
     function getScaleAdjustedCoordinates(canvas: HTMLCanvasElement, e: PointerEvent) {
       const elementRelativeX = e.offsetX;
       const elementRelativeY = e.offsetY;
@@ -47,10 +82,9 @@
       ctx.strokeStyle = color;
       ctx.lineWidth = size;
 
-      updateDrawing(socket, {
-        kind: DrawingUpdateKind.START,
-        x,
-        y,
+      beginNewEvent({
+        kind: DrawingEventKind.Start,
+        sequence: [{ x, y }],
         size,
         color,
       });
@@ -64,29 +98,24 @@
       node.removeEventListener("pointermove", onPointerMove);
     }
 
-    const onPointerMove = throttle((event: PointerEvent) => {
+    const onPointerMove = (event: PointerEvent) => {
       const { x, y } = getScaleAdjustedCoordinates(node, event);
 
       ctx.lineTo(x, y);
       ctx.stroke();
 
-      updateDrawing(socket, {
-        kind: DrawingUpdateKind.CONTINUE,
-        x,
-        y,
-        size,
-        color,
-      });
-    }, 10);
+      addToEventSequence({ x, y });
+    };
 
     node.addEventListener("pointerdown", onPointerDown);
 
     return {
       destroy() {
         node.removeEventListener("pointerdown", onPointerDown);
+        clearInterval(updateInterval);
       },
     };
-  };
+  }
 </script>
 
 <div class="relative flex flex-col h-full">

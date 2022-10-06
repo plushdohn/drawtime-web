@@ -24,17 +24,17 @@ export type AnyChatEvent = ChatMessage | CorrectGuess;
 export function subscribeToChatEvents(listener: (chatEvent: AnyChatEvent) => any) {
   return registerSocketEventsListener((event) => {
     if (event.kind === ServerEventKind.CHAT_MESSAGE) {
-      const [senderId, contents] = event.payload;
+      const { playerId, message } = event.payload;
 
       listener({
         kind: ChatEventKind.MESSAGE,
         payload: {
-          senderId,
-          contents,
+          senderId: playerId,
+          contents: message,
         },
       });
     } else if (event.kind === ServerEventKind.CORRECT_GUESS) {
-      const [playerId] = event.payload;
+      const { playerId } = event.payload;
 
       listener({
         kind: ChatEventKind.CORRECT_GUESS,
@@ -47,6 +47,6 @@ export function subscribeToChatEvents(listener: (chatEvent: AnyChatEvent) => any
 export function sendChatMessage(socket: WebSocket, message: string) {
   sendClientEvent(socket, {
     kind: ClientEventKind.SEND_CHAT_MESSAGE,
-    payload: [message],
+    payload: { message },
   });
 }

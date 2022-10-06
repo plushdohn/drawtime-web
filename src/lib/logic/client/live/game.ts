@@ -7,14 +7,14 @@ type Listener = (updater: (s: GameState) => GameState) => void;
 export function subscribeToGameUpdates(callback: Listener) {
   return registerSocketEventsListener((event) => {
     if (event.kind === ServerEventKind.PLAYER_JOINED) {
-      const [playerId, name, avatarUrl] = event.payload;
+      const { id, name, avatarUrl } = event.payload;
 
       callback((s) => ({
         ...s,
         players: [
           ...s.players,
           {
-            id: playerId,
+            id,
             username: name,
             avatarUrl: avatarUrl,
             score: null,
@@ -23,14 +23,14 @@ export function subscribeToGameUpdates(callback: Listener) {
         ],
       }));
     } else if (event.kind === ServerEventKind.PLAYER_LEFT) {
-      const [playerId] = event.payload;
+      const { playerId } = event.payload;
 
       return callback((s) => ({
         ...s,
         players: s.players.filter((p) => p.id !== playerId),
       }));
     } else if (event.kind === ServerEventKind.ROUND_STARTED) {
-      const [artistId, round, choices] = event.payload;
+      const { artistId, round, choices } = event.payload;
 
       callback((s) => ({
         ...s,
@@ -50,7 +50,7 @@ export function subscribeToGameUpdates(callback: Listener) {
         ...(choices ? { choices: choices.split(",") } : {}),
       }));
     } else if (event.kind === ServerEventKind.DRAWING_STARTED) {
-      const [clue, secret] = event.payload;
+      const { clue, secret } = event.payload;
 
       callback((s) => ({
         ...s,
@@ -59,7 +59,7 @@ export function subscribeToGameUpdates(callback: Listener) {
         ...(secret ? { secret } : {}),
       }));
     } else if (event.kind === ServerEventKind.CORRECT_GUESS) {
-      const [playerId, guessIndex, points] = event.payload;
+      const { playerId, guessIndex, points } = event.payload;
 
       callback((s) => ({
         ...s,
@@ -87,10 +87,10 @@ export function subscribeToGameUpdates(callback: Listener) {
         }),
       }));
     } else if (event.kind === ServerEventKind.CLUE_UPDATE) {
-      const [newClue] = event.payload;
+      const { newClue } = event.payload;
       callback((s) => ({ ...s, clue: newClue }));
     } else if (event.kind === ServerEventKind.ROUND_ENDED) {
-      const [secret] = event.payload;
+      const { secret } = event.payload;
 
       callback((s) => ({
         ...s,
@@ -123,7 +123,12 @@ export async function createGame(
 
   const gameId = await sendAsyncEvent<string>(socket, asyncId, {
     kind: ClientEventKind.CREATE_GAME,
-    payload: [asyncId, params.topicId, params.drawingTime, params.rounds],
+    payload: {
+      asyncId,
+      topicId: params.topicId,
+      drawingTime: params.drawingTime,
+      rounds: params.rounds,
+    },
   });
 
   return gameId;
@@ -134,26 +139,26 @@ export async function joinGame(socket: WebSocket, gameId: string) {
 
   const game = await sendAsyncEvent<GameState>(socket, asyncId, {
     kind: ClientEventKind.JOIN_GAME,
-    payload: [asyncId, gameId],
+    payload: { asyncId, gameId },
   });
 
   return game;
 }
 
 export function startGame(socket: WebSocket) {
-  sendClientEvent(socket, { kind: ClientEventKind.START_GAME, payload: [] });
+  sendClientEvent(socket, { kind: ClientEventKind.START_GAME, payload: undefined });
 }
 
 export function chooseWord(socket: WebSocket, choice: string) {
   sendClientEvent(socket, {
     kind: ClientEventKind.CHOOSE_WORD,
-    payload: [choice],
+    payload: { choice },
   });
 }
 
 export function makeGuess(socket: WebSocket, guess: string) {
   sendClientEvent(socket, {
     kind: ClientEventKind.MAKE_GUESS,
-    payload: [guess],
+    payload: { guess },
   });
 }
