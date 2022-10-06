@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { afterUpdate, onMount } from "svelte";
   import CorrectGuessMessage from "./CorrectGuessChatMessage.svelte";
   import { GamePhase, type Player } from "$lib/logic/shared";
   import { makeGuess } from "$lib/logic/client/live/game";
@@ -32,9 +32,12 @@
   let inputValue = "";
   let chatDiv: HTMLElement;
 
+  afterUpdate(() => {
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  });
+
   onMount(() => {
     const unsub = subscribeToChatEvents((e) => {
-      console.log("RECEIVED A CHAT MESSAGE");
       if (e.kind === ChatEventKind.MESSAGE) {
         const player = players.find((p) => p.id === e.payload.senderId);
 
@@ -69,8 +72,6 @@
           },
         ];
       }
-
-      chatDiv.scrollTop = chatDiv.scrollHeight;
     });
 
     return unsub;
@@ -79,19 +80,20 @@
   async function handleSubmit(e: Event) {
     e.preventDefault();
 
-    if (
-      clue &&
-      inputValue.trim().length > 0 &&
-      phase === GamePhase.Drawing &&
-      artistId !== userId &&
-      clue.length === inputValue.length
-    ) {
-      makeGuess(socket, inputValue);
-    } else {
-      sendChatMessage(socket, inputValue);
-    }
+    if (inputValue.trim().length > 0) {
+      if (
+        clue &&
+        phase === GamePhase.Drawing &&
+        artistId !== userId &&
+        clue.length === inputValue.length
+      ) {
+        makeGuess(socket, inputValue);
+      } else {
+        sendChatMessage(socket, inputValue);
+      }
 
-    inputValue = "";
+      inputValue = "";
+    }
   }
 </script>
 
@@ -101,7 +103,7 @@
       {#if event.kind === ChatEventKind.MESSAGE}
         <div class="w-full mb-2">
           <span class="text-yellow-400 font-semibold">
-            {event.payload.senderName}
+            {event.payload.senderName}:
           </span>
           <span class="text-white">
             {event.payload.contents}
