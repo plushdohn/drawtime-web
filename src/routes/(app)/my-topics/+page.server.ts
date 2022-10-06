@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     const topics = await getTopicsByUser(user.id);
 
     return {
-      topics,
+      topics: topics,
     };
   } catch (err) {
     throw error(500, "Couldn't fetch user topics");

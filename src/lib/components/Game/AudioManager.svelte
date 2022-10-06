@@ -6,11 +6,15 @@
   onMount(() => {
     return registerSocketEventsListener((event) => {
       if (event.kind === ServerEventKind.DRAWING_STARTED) {
-        new Audio("/sounds/round-start.mp3").play();
+        const audio = new Audio("/sounds/round-start.mp3");
+
+        audio.volume = 0.4;
+
+        audio.play();
       } else if (event.kind === ServerEventKind.CORRECT_GUESS) {
         const audio = new Audio("/sounds/correct-guess.mp3");
 
-        audio.volume = 0.7;
+        audio.volume = 0.4;
 
         audio.play();
       } else if (event.kind === ServerEventKind.CHAT_MESSAGE) {
