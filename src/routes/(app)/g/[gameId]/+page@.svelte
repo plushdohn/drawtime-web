@@ -32,13 +32,15 @@
   {#if $gameServerConnectionStore.socket !== null}
     <Game {gameId} socket={$gameServerConnectionStore.socket} userId={user.id} />
   {:else}
-    <div class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm">
+    <div
+      class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm max-w-xs text-center w-full"
+    >
       {#if $gameServerConnectionStore.error !== null}
-        <span class="text-4xl text-zinc-400 font-bold">:(</span>
-        <span class="text-zinc-400 font-semibold mt-4">Lost connection to game servers.</span>
+        <span class="text-4xl text-white font-bold">Oh no!</span>
+        <span class="text-zinc-400 mt-2">Lost connection to game servers.</span>
         <button
           on:click={reconnect}
-          class="bg-red-500 font-semibold rounded-sm py-2 px-12 mt-8 hover:bg-red-400 focus:bg-red-400"
+          class="w-full bg-red-500 font-semibold rounded-sm py-2 mt-8 hover:bg-red-400 focus:bg-red-400"
         >
           Retry
         </button>

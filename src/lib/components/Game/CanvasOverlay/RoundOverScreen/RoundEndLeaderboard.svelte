@@ -22,7 +22,7 @@
   {#each sortedPlayers as player (player.id)}
     <div class="flex items-center w-full font-bold text-2xl py-2 whitespace-nowrap">
       <img src={player.avatarUrl} class="w-8 h-8 rounded-full mr-3" alt="" />
-      <span class="text-white font-semibold text-base mr-8 w-full text-left">
+      <span class="text-white font-semibold text-base mr-8 w-full text-left truncate">
         {player.username}
       </span>
       {#if player.id === artist}
