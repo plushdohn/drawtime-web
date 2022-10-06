@@ -31,6 +31,8 @@ export const connectToGameServer = (authToken: string) => {
         socket: sock,
       });
 
+      heartbeat(sock);
+
       resolve(sock);
     };
 
@@ -47,9 +49,26 @@ export const connectToGameServer = (authToken: string) => {
     };
 
     sock.onmessage = (e: MessageEvent) => {
+      if (e.data === "ping") {
+        heartbeat(sock);
+        return sock.send("pong");
+      }
+
       console.log("RECEIVED SOCKET EVENT:");
       console.log(e.data);
       handleMessage(e.data);
+    };
+
+    sock.onclose = () => {
+      console.log("SOCKET CONNECTION CLOSED");
+
+      gameServerConnectionStore.set({
+        pending: false,
+        error: "Socket closed",
+        socket: null,
+      });
+
+      if (heartbeatTimeout !== null) clearTimeout(heartbeatTimeout);
     };
   });
 };
@@ -89,4 +108,14 @@ function handleMessage(message: string) {
   const data = JSON.parse(message) as AnyServerEvent;
 
   socketListeners.forEach((listener) => listener(data));
+}
+
+let heartbeatTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function heartbeat(socket: WebSocket) {
+  if (heartbeatTimeout !== null) clearTimeout(heartbeatTimeout);
+
+  heartbeatTimeout = setTimeout(() => {
+    socket.close();
+  }, 30000 + 1000);
 }
