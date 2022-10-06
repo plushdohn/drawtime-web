@@ -23,6 +23,7 @@
   on:focus={handleHover}
   on:blur={handleLeave}
   on:mouseleave={handleLeave}
+  title={topic.name}
   class="flex-shrink-0 snap-start relative rounded-sm flex flex-col rounded-sm overflow-hidden cursor-pointer"
 >
   <TopicThumbnail topicId={topic.id} class="w-64 aspect-video object-cover" />
@@ -40,7 +41,7 @@
         {topic.plays} plays
       </span>
     {/if}
-    <span class="text-white font-bold font-fancy text-lg truncate">
+    <span class="text-white font-bold font-fancy text-lg line-clamp-2">
       {topic.name}
     </span>
   </div>
