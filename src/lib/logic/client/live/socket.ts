@@ -116,6 +116,7 @@ function heartbeat(socket: WebSocket) {
   if (heartbeatTimeout !== null) clearTimeout(heartbeatTimeout);
 
   heartbeatTimeout = setTimeout(() => {
+    console.log("NO RESPONSE TO HEARTBEAT, CLOSING SOCKET");
     socket.close();
   }, 30000 + 1000);
 }
