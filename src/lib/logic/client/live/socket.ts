@@ -113,7 +113,10 @@ function handleMessage(message: string) {
 let heartbeatTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function heartbeat(socket: WebSocket) {
-  if (heartbeatTimeout !== null) clearTimeout(heartbeatTimeout);
+  if (heartbeatTimeout !== null) {
+    clearTimeout(heartbeatTimeout);
+    heartbeatTimeout = null;
+  }
 
   heartbeatTimeout = setTimeout(() => {
     console.log("NO RESPONSE TO HEARTBEAT, CLOSING SOCKET");
