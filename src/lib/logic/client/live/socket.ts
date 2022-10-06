@@ -51,6 +51,7 @@ export const connectToGameServer = (authToken: string) => {
     sock.onmessage = (e: MessageEvent) => {
       if (e.data === "ping") {
         heartbeat(sock);
+        console.log("PING RECEIVED, PONGING");
         return sock.send("pong");
       }
 
@@ -115,7 +116,6 @@ let heartbeatTimeout: ReturnType<typeof setTimeout> | null = null;
 function heartbeat(socket: WebSocket) {
   if (heartbeatTimeout !== null) {
     clearTimeout(heartbeatTimeout);
-    heartbeatTimeout = null;
   }
 
   heartbeatTimeout = setTimeout(() => {
