@@ -1,7 +1,7 @@
 import { getProfilePictureFromBase64 } from "$lib/logic/server/images";
 import { uploadProfilePicture } from "$lib/logic/server/storage";
 import { supabaseServer } from "$lib/logic/server/supabase";
-import type { ProfileModel } from "$lib/logic/shared";
+import type { ProfileModel } from "$lib/logic/shared-types";
 import { type RequestHandler, json, error } from "@sveltejs/kit";
 import { z } from "zod";
 

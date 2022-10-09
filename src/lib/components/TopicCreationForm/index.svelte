@@ -6,7 +6,7 @@
   import { z } from "zod";
   import CreationModal from "./Modal.svelte";
   import axios from "axios";
-  import { createTopicSchema } from "$lib/logic/shared";
+  import { createTopicSchema } from "$lib/logic/shared-types";
   import DeleteSweepIcon from "../icons/DeleteSweepIcon.svelte";
 
   export let authToken: string;

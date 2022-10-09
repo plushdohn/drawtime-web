@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { TopicModel, WordModel } from "$lib/logic/shared";
+import type { TopicModel, WordModel } from "$lib/logic/shared-types";
 import { supabaseServer } from "./supabase";
 
 export const createTopicWithWords = async (params: {

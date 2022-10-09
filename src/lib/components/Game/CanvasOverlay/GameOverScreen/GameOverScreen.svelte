@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Player } from "$lib/logic/shared";
+  import type { Player } from "$lib/logic/shared-types";
   import GameOverLeaderboard from "./GameOverLeaderboard.svelte";
 
   export let players: Player[];

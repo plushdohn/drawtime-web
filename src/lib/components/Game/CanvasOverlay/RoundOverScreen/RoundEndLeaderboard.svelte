@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Player } from "$lib/logic/shared";
+  import type { Player } from "$lib/logic/shared-types";
 
   export let players: Player[];
   export let artist: string;

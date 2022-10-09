@@ -1,10 +1,11 @@
 import { PUBLIC_GAMESERVER_URL } from "$env/static/public";
+import { io, type Socket } from "socket.io-client";
 import { writable } from "svelte/store";
-import type { AnyClientEvent, AnyServerEvent } from "$lib/logic/shared";
+import type { ExtendedSocket } from "./types";
 
 type GameServerConnectionStore = {
   pending: boolean;
-  socket: WebSocket | null;
+  socket: ExtendedSocket | null;
   error: string | null;
 };
 
@@ -15,111 +16,50 @@ export const gameServerConnectionStore = writable<GameServerConnectionStore>({
 });
 
 export const connectToGameServer = (authToken: string) => {
-  gameServerConnectionStore.set({
-    pending: true,
-    error: null,
-    socket: null,
-  });
+  return new Promise<Socket>((resolve, reject) => {
+    const sock = io(PUBLIC_GAMESERVER_URL, {
+      reconnection: false,
+      transports: ["websocket"],
+      query: {
+        token: authToken,
+      },
+    });
 
-  const sock = new WebSocket(`${PUBLIC_GAMESERVER_URL}/?token=${authToken}`);
+    gameServerConnectionStore.set({
+      pending: true,
+      error: null,
+      socket: null,
+    });
 
-  return new Promise<WebSocket>((resolve, reject) => {
-    sock.onopen = () => {
+    sock.on("connect", () => {
       gameServerConnectionStore.set({
         pending: false,
         error: null,
         socket: sock,
       });
 
-      heartbeat(sock);
-
       resolve(sock);
-    };
+    });
 
-    sock.onerror = () => {
-      sock.close();
+    sock.on("disconnect", () => {
+      gameServerConnectionStore.set({
+        pending: false,
+        error: "Socket was closed",
+        socket: null,
+      });
 
+      reject(new Error("Couldn't reach game servers"));
+    });
+
+    sock.on("connect_error", (err) => {
       gameServerConnectionStore.set({
         pending: false,
         error: "Socket encountered an error",
         socket: null,
       });
 
+      console.log(err);
       reject(new Error("Couldn't reach game servers"));
-    };
-
-    sock.onmessage = (e: MessageEvent) => {
-      if (e.data === "ping") {
-        heartbeat(sock);
-        console.log("PING RECEIVED, PONGING");
-        return sock.send("pong");
-      }
-
-      console.log("RECEIVED SOCKET EVENT:");
-      console.log(e.data);
-      handleMessage(e.data);
-    };
-
-    sock.onclose = () => {
-      console.log("SOCKET CONNECTION CLOSED");
-
-      gameServerConnectionStore.set({
-        pending: false,
-        error: "Socket closed",
-        socket: null,
-      });
-
-      if (heartbeatTimeout !== null) clearTimeout(heartbeatTimeout);
-    };
+    });
   });
 };
-
-export function sendClientEvent(socket: WebSocket, event: AnyClientEvent) {
-  const encoded = JSON.stringify(event);
-  socket.send(encoded);
-
-  console.log("FIRED SOCKET EVENT:");
-  console.log(encoded);
-}
-
-type SocketListener = (event: AnyServerEvent) => any;
-
-let socketListeners: Set<SocketListener> = new Set();
-
-export function registerSocketEventsListener(listener: SocketListener) {
-  socketListeners.add(listener);
-
-  return () => {
-    socketListeners.delete(listener);
-  };
-}
-
-export function registerListenerToSpecificSocketEvent<T extends AnyServerEvent>(
-  event: T["kind"],
-  listener: (payload: T["payload"]) => any
-) {
-  return registerSocketEventsListener((e) => {
-    if (e.kind === event) {
-      listener(e.payload);
-    }
-  });
-}
-
-function handleMessage(message: string) {
-  const data = JSON.parse(message) as AnyServerEvent;
-
-  socketListeners.forEach((listener) => listener(data));
-}
-
-let heartbeatTimeout: ReturnType<typeof setTimeout> | null = null;
-
-function heartbeat(socket: WebSocket) {
-  if (heartbeatTimeout !== null) {
-    clearTimeout(heartbeatTimeout);
-  }
-
-  heartbeatTimeout = setTimeout(() => {
-    console.log("NO RESPONSE TO HEARTBEAT, CLOSING SOCKET");
-    socket.close();
-  }, 30000 + 1000);
-}

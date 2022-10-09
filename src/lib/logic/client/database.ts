@@ -1,11 +1,8 @@
-import type { WordModel, TopicModel } from "../shared";
+import type { WordModel, TopicModel } from "../shared-types";
 import { supabaseClient } from "./supabase";
 
 export const deleteTopicWithWords = async (topicId: string) => {
-  const { error: wordsErr } = await supabaseClient
-    .from("words")
-    .delete()
-    .eq("topic", topicId);
+  const { error: wordsErr } = await supabaseClient.from("words").delete().eq("topic", topicId);
 
   if (wordsErr) throw wordsErr;
 

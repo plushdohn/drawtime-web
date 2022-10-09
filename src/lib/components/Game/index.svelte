@@ -1,6 +1,6 @@
 <script lang="ts">
   import Spinner from "$lib/components/Spinner.svelte";
-  import { GamePhase, type GameState } from "$lib/logic/shared";
+  import { GamePhase, type GameState } from "$lib/logic/shared-types";
   import { onMount } from "svelte";
   import PlayerLeaderboard from "./PlayerLeaderboard.svelte";
   import RemoteCanvas from "./RemoteCanvas/RemoteCanvas.svelte";
@@ -8,8 +8,9 @@
   import ArtistCanvas from "./ArtistCanvas/ArtistCanvas.svelte";
   import { joinGame, subscribeToGameUpdates } from "$lib/logic/client/live/game";
   import AudioManager from "./AudioManager.svelte";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
 
-  export let socket: WebSocket;
+  export let socket: ExtendedSocket;
   export let gameId: string;
   export let userId: string;
 
@@ -22,7 +23,7 @@
     try {
       game = await joinGame(socket, gameId);
 
-      unsub = subscribeToGameUpdates((updater) => {
+      unsub = subscribeToGameUpdates(socket, (updater) => {
         game = updater(game as GameState);
       });
     } catch (err: any) {
@@ -52,7 +53,7 @@
       players={game.players}
     />
 
-    <AudioManager />
+    <AudioManager {socket} />
   </div>
 {:else}
   <div class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm">

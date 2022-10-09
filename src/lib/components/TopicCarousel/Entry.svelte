@@ -1,6 +1,6 @@
 <script lang="ts">
   import TopicThumbnail from "$lib/components/TopicThumbnail.svelte";
-  import type { TopicModel, TopicWithCreator } from "$lib/logic/shared";
+  import type { TopicModel, TopicWithCreator } from "$lib/logic/shared-types";
   import { slide } from "svelte/transition";
 
   export let topic: TopicWithCreator;

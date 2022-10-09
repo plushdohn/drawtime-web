@@ -1,6 +1,6 @@
 <script lang="ts">
   import ArtistIcon from "$lib/components/icons/ArtistIcon.svelte";
-  import type { Player } from "$lib/logic/shared";
+  import type { Player } from "$lib/logic/shared-types";
   import { flip } from "svelte/animate";
 
   export let players: Player[];

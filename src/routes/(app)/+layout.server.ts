@@ -1,6 +1,6 @@
 import { supabaseServer } from "$lib/logic/server/supabase";
 import { error } from "@sveltejs/kit";
-import type { ProfileModel } from "$lib/logic/shared";
+import type { ProfileModel } from "$lib/logic/shared-types";
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = async ({ locals }) => {

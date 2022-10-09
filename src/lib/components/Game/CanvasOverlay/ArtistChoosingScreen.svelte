@@ -1,10 +1,11 @@
 <script lang="ts">
   import { chooseWord } from "$lib/logic/client/live/game";
-  import { GamePhase } from "$lib/logic/shared";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
+  import { GamePhase } from "$lib/logic/shared-types";
   import GameTimer from "../GameTimer.svelte";
 
-  export let choices: string[];
-  export let socket: WebSocket;
+  export let choices: string[] | null;
+  export let socket: ExtendedSocket;
 
   function handleChoice(choice: string) {
     chooseWord(socket, choice);

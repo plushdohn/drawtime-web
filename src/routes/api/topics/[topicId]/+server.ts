@@ -2,7 +2,7 @@ import { verifyCaptchaToken } from "$lib/logic/server/captcha";
 import { updateTopicWithWords } from "$lib/logic/server/database";
 import { getTopicThumbnailsFromBase64 } from "$lib/logic/server/images";
 import { uploadTopicThumbs } from "$lib/logic/server/storage";
-import { createTopicSchema } from "$lib/logic/shared";
+import { createTopicSchema } from "$lib/logic/shared-types";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { z } from "zod";
 

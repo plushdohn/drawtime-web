@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { type GameState, GamePhase } from "$lib/logic/shared";
+  import { dev } from "$app/environment";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
+  import { type GameState, GamePhase } from "$lib/logic/shared-types";
   import ArtistChoosingScreen from "./ArtistChoosingScreen.svelte";
   import GameOverScreen from "./GameOverScreen/GameOverScreen.svelte";
   import HostWaitingScreen from "./HostWaitingScreen.svelte";
@@ -10,14 +12,12 @@
 
   export let game: GameState;
   export let userId: string;
-  export let socket: WebSocket;
+  export let socket: ExtendedSocket;
 </script>
 
-<div
-  class="absolute w-full h-full bg-[#000000aa] flex flex-col justify-center items-center"
->
+<div class="absolute w-full h-full bg-[#000000aa] flex flex-col justify-center items-center">
   {#if game.phase === GamePhase.Waiting}
-    {#if game.players.length < (import.meta.env.PROD ? 3 : 2)}
+    {#if game.players.length < (dev ? 2 : 3)}
       <WaitingPlayersScreen />
     {:else if game.owner === userId}
       <HostWaitingScreen {socket} />
@@ -26,7 +26,7 @@
     {/if}
   {:else if game.phase === GamePhase.Choosing}
     {#if game.artist === userId}
-      <ArtistChoosingScreen {...game} {socket} />
+      <ArtistChoosingScreen choices={game.choices} {socket} />
     {:else}
       <WaitingForArtistChoiceScreen {...game} />
     {/if}

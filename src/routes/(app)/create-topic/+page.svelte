@@ -9,7 +9,7 @@
   import TopicFormThumbnail from "$lib/components/TopicForm/TopicFormThumbnail.svelte";
   import TopicFormWords from "$lib/components/TopicForm/TopicFormWords.svelte";
   import { createForm } from "$lib/logic/client/form";
-  import { createTopicSchema } from "$lib/logic/shared";
+  import { createTopicSchema } from "$lib/logic/shared-types";
   import axios from "axios";
   import { z } from "zod";
 

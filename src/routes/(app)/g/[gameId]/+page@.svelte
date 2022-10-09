@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import Spinner from "$lib/components/Spinner.svelte";
   import { connectToGameServer, gameServerConnectionStore } from "$lib/logic/client/live/socket";

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { GamePhase } from "$lib/logic/shared";
+  import { GamePhase } from "$lib/logic/shared-types";
 
   export let phase: GamePhase;
   export let clue: string | null;

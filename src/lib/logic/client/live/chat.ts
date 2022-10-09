@@ -1,5 +1,4 @@
-import { ClientEventKind, ServerEventKind } from "$lib/logic/shared";
-import { registerSocketEventsListener, sendClientEvent } from "./socket";
+import type { ExtendedSocket } from "./types";
 
 export enum ChatEventKind {
   MESSAGE = "MESSAGE",
@@ -21,32 +20,36 @@ type CorrectGuess = {
 
 export type AnyChatEvent = ChatMessage | CorrectGuess;
 
-export function subscribeToChatEvents(listener: (chatEvent: AnyChatEvent) => any) {
-  return registerSocketEventsListener((event) => {
-    if (event.kind === ServerEventKind.CHAT_MESSAGE) {
-      const { playerId, message } = event.payload;
+export function subscribeToChatEvents(
+  socket: ExtendedSocket,
+  listener: (chatEvent: AnyChatEvent) => any
+) {
+  function handleChatMessage(senderId: string, contents: string) {
+    listener({
+      kind: ChatEventKind.MESSAGE,
+      payload: {
+        senderId,
+        contents,
+      },
+    });
+  }
 
-      listener({
-        kind: ChatEventKind.MESSAGE,
-        payload: {
-          senderId: playerId,
-          contents: message,
-        },
-      });
-    } else if (event.kind === ServerEventKind.CORRECT_GUESS) {
-      const { playerId } = event.payload;
+  function handleCorrectGuess(playerId: string) {
+    listener({
+      kind: ChatEventKind.CORRECT_GUESS,
+      payload: playerId,
+    });
+  }
 
-      listener({
-        kind: ChatEventKind.CORRECT_GUESS,
-        payload: playerId,
-      });
-    }
-  });
+  socket.on("chatMessage", handleChatMessage);
+  socket.on("correctGuess", handleCorrectGuess);
+
+  return () => {
+    socket.off("chatMessage", handleChatMessage);
+    socket.off("correctGuess", handleCorrectGuess);
+  };
 }
 
-export function sendChatMessage(socket: WebSocket, message: string) {
-  sendClientEvent(socket, {
-    kind: ClientEventKind.SEND_CHAT_MESSAGE,
-    payload: { message },
-  });
+export function sendChatMessage(socket: ExtendedSocket, message: string) {
+  socket.emit("sendMessage", message);
 }

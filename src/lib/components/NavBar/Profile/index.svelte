@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ProfileModel } from "$lib/logic/shared";
+  import type { ProfileModel } from "$lib/logic/shared-types";
 
   import NavBarProfileMenu from "./PopUpMenu/index.svelte";
 
@@ -13,8 +13,7 @@
   }
 
   function onMenuFocusOut(event: Event) {
-    const newlyFocusedEl = (event as MouseEvent)
-      .relatedTarget as HTMLElement | null;
+    const newlyFocusedEl = (event as MouseEvent).relatedTarget as HTMLElement | null;
 
     if (newlyFocusedEl !== null && button.contains(newlyFocusedEl)) return;
 

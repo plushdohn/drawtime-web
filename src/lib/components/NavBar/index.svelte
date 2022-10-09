@@ -3,7 +3,7 @@
   import Logo from "./Logo.svelte";
   import Profile from "./Profile/index.svelte";
   import CreateTopicIcon from "../icons/CreateTopicIcon.svelte";
-  import type { ProfileModel } from "$lib/logic/shared";
+  import type { ProfileModel } from "$lib/logic/shared-types";
 
   export let userProfile: ProfileModel | null;
 </script>

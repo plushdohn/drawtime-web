@@ -1,20 +1,21 @@
 <script lang="ts">
   import { afterUpdate, onMount } from "svelte";
   import CorrectGuessMessage from "./CorrectGuessChatMessage.svelte";
-  import { GamePhase, type Player } from "$lib/logic/shared";
-  import { makeGuess } from "$lib/logic/client/live/game";
+  import { GamePhase, type Player } from "$lib/logic/shared-types";
+  import { guess } from "$lib/logic/client/live/game";
   import {
     ChatEventKind,
     sendChatMessage,
     subscribeToChatEvents,
   } from "$lib/logic/client/live/chat";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
 
   export let phase: GamePhase;
   export let artistId: string;
   export let clue: string | null;
   export let userId: string;
   export let players: Player[];
-  export let socket: WebSocket;
+  export let socket: ExtendedSocket;
 
   let events: (
     | {
@@ -37,7 +38,7 @@
   });
 
   onMount(() => {
-    const unsub = subscribeToChatEvents((e) => {
+    const unsub = subscribeToChatEvents(socket, (e) => {
       if (e.kind === ChatEventKind.MESSAGE) {
         const player = players.find((p) => p.id === e.payload.senderId);
 
@@ -87,7 +88,7 @@
         artistId !== userId &&
         clue.length === inputValue.length
       ) {
-        makeGuess(socket, inputValue);
+        guess(socket, inputValue.toLowerCase());
       } else {
         sendChatMessage(socket, inputValue);
       }

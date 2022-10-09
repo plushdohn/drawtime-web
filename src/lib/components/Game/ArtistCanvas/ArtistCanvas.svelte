@@ -10,13 +10,13 @@
     GamePhase,
     type DrawingContinueEvent,
     type GameState,
-  } from "$lib/logic/shared";
+  } from "$lib/logic/shared-types";
   import { updateDrawing } from "$lib/logic/client/live/drawing";
-  import { throttle } from "lodash";
   import BrushSizeSelector from "./BrushSizeSelector.svelte";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
 
   export let game: GameState;
-  export let socket: WebSocket;
+  export let socket: ExtendedSocket;
   export let userId: string;
 
   let color = "#000000";

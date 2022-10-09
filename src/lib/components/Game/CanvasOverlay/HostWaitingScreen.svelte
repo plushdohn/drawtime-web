@@ -1,7 +1,8 @@
 <script lang="ts">
   import { startGame } from "$lib/logic/client/live/game";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
 
-  export let socket: WebSocket;
+  export let socket: ExtendedSocket;
 </script>
 
 <div class="p-16 bg-zinc-800 rounded flex flex-col items-center max-w-sm text-center">

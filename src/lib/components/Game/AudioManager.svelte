@@ -1,29 +1,42 @@
 <script lang="ts">
-  import { registerSocketEventsListener } from "$lib/logic/client/live/socket";
-  import { ServerEventKind } from "$lib/logic/shared";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
   import { onMount } from "svelte";
 
+  export let socket: ExtendedSocket;
+
   onMount(() => {
-    return registerSocketEventsListener((event) => {
-      if (event.kind === ServerEventKind.DRAWING_STARTED) {
-        const audio = new Audio("/sounds/round-start.mp3");
+    function handleDrawingStarted() {
+      const audio = new Audio("/sounds/round-start.mp3");
 
-        audio.volume = 0.4;
+      audio.volume = 0.4;
 
-        audio.play();
-      } else if (event.kind === ServerEventKind.CORRECT_GUESS) {
-        const audio = new Audio("/sounds/correct-guess.mp3");
+      audio.play();
+    }
 
-        audio.volume = 0.4;
+    function handleCorrectGuess() {
+      const audio = new Audio("/sounds/correct-guess.mp3");
 
-        audio.play();
-      } else if (event.kind === ServerEventKind.CHAT_MESSAGE) {
-        const audio = new Audio("/sounds/chat-message.mp3");
+      audio.volume = 0.4;
 
-        audio.volume = 0.2;
+      audio.play();
+    }
 
-        audio.play();
-      }
-    });
+    function handleChatMessage() {
+      const audio = new Audio("/sounds/chat-message.mp3");
+
+      audio.volume = 0.2;
+
+      audio.play();
+    }
+
+    socket.on("drawingStarted", handleDrawingStarted);
+    socket.on("correctGuess", handleCorrectGuess);
+    socket.on("chatMessage", handleChatMessage);
+
+    return () => {
+      socket.off("drawingStarted", handleDrawingStarted);
+      socket.off("correctGuess", handleCorrectGuess);
+      socket.off("chatMessage", handleChatMessage);
+    };
   });
 </script>

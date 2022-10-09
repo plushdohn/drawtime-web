@@ -1,23 +1,19 @@
-import {
-  ClientEventKind,
-  ServerEventKind,
-  type AnyDrawingEvent,
-  type DrawingUpdateEvent,
-} from "$lib/logic/shared";
-import { registerListenerToSpecificSocketEvent, sendClientEvent } from "./socket";
+import type { AnyDrawingEvent } from "$lib/logic/shared-types";
+import type { ExtendedSocket } from "./types";
 
-export function subscribeToDrawingUpdates(listener: (event: AnyDrawingEvent) => any) {
-  return registerListenerToSpecificSocketEvent<DrawingUpdateEvent>(
-    ServerEventKind.DRAWING_UPDATE,
-    (payload) => {
-      listener(payload);
-    }
-  );
+export function updateDrawing(socket: ExtendedSocket, update: AnyDrawingEvent) {
+  socket.emit("updateDrawing", update);
 }
 
-export function updateDrawing<T extends AnyDrawingEvent>(socket: WebSocket, event: T) {
-  sendClientEvent(socket, {
-    kind: ClientEventKind.UPDATE_DRAWING,
-    payload: event,
-  });
+export function subscribeToDrawingUpdates(
+  socket: ExtendedSocket,
+  listener: (u: AnyDrawingEvent) => void
+) {
+  function handleDrawingUpdate(update: AnyDrawingEvent) {
+    listener(update);
+  }
+
+  socket.on("drawingUpdate", handleDrawingUpdate);
+
+  return () => socket.off("drawingUpdate", handleDrawingUpdate);
 }

@@ -1,5 +1,5 @@
 import { supabaseServer } from "$lib/logic/server/supabase";
-import type { TopicWithCreator } from "$lib/logic/shared";
+import type { TopicWithCreator } from "$lib/logic/shared-types";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 

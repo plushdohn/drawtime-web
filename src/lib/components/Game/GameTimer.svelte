@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { GamePhase } from "$lib/logic/shared";
+  import { GamePhase } from "$lib/logic/shared-types";
   import { tweened } from "svelte/motion";
 
   const progress = tweened(100);

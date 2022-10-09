@@ -1,35 +1,28 @@
 <script lang="ts">
   import { subscribeToDrawingUpdates } from "$lib/logic/client/live/drawing";
-  import { registerListenerToSpecificSocketEvent } from "$lib/logic/client/live/socket";
-  import {
-    GamePhase,
-    type RoundStartedEvent,
-    ServerEventKind,
-    type GameState,
-    DrawingEventKind,
-  } from "$lib/logic/shared";
+  import type { ExtendedSocket } from "$lib/logic/client/live/types";
+  import { GamePhase, type GameState, DrawingEventKind } from "$lib/logic/shared-types";
   import CanvasOverlay from "../CanvasOverlay/CanvasOverlay.svelte";
   import Clue from "../Clue.svelte";
   import GameTimer from "../GameTimer.svelte";
 
   export let game: GameState;
   export let userId: string;
-  export let socket: WebSocket;
+  export let socket: ExtendedSocket;
 
   function clearOnRoundChange(node: HTMLCanvasElement) {
     const ctx = node.getContext("2d") as CanvasRenderingContext2D;
 
-    const unsub = registerListenerToSpecificSocketEvent<RoundStartedEvent>(
-      ServerEventKind.ROUND_STARTED,
-      () => {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, node.width, node.height);
-      }
-    );
+    function handleRoundStart() {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, node.width, node.height);
+    }
+
+    socket.on("roundStarted", handleRoundStart);
 
     return {
       destroy() {
-        unsub();
+        socket.off("roundStarted", handleRoundStart);
       },
     };
   }
@@ -37,7 +30,7 @@
   function remoteDrawing(node: HTMLCanvasElement) {
     const ctx = node.getContext("2d") as CanvasRenderingContext2D;
 
-    const unsub = subscribeToDrawingUpdates((update) => {
+    const unsub = subscribeToDrawingUpdates(socket, (update) => {
       if (update.kind === DrawingEventKind.Start || update.kind === DrawingEventKind.Continue) {
         if (update.kind === DrawingEventKind.Start) {
           ctx.beginPath();

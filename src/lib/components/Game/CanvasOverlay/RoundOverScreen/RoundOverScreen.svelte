@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { GamePhase, type Player } from "$lib/logic/shared";
+  import { GamePhase, type Player } from "$lib/logic/shared-types";
   import GameTimer from "../../GameTimer.svelte";
   import RoundEndLeaderboard from "./RoundEndLeaderboard.svelte";
 
