@@ -141,6 +141,7 @@ export type PlayerModel = {
   avatarUrl: string | null;
   score: number | null;
   guessIndex: number | null;
+  disconnected: boolean;
 };
 
 // Game->players join query

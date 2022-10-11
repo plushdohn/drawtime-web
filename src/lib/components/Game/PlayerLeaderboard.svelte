@@ -2,6 +2,7 @@
   import ArtistIcon from "$lib/components/icons/ArtistIcon.svelte";
   import type { Player } from "$lib/logic/shared-types";
   import { flip } from "svelte/animate";
+  import DisconnectedIcon from "../icons/DisconnectedIcon.svelte";
 
   export let players: Player[];
   export let artistId: string;
@@ -19,19 +20,24 @@
     <div class="flex items-center my-2 p-4 rounded-l bg-zinc-800" animate:flip>
       <img
         class="w-10 h-10 rounded-full"
+        class:grayscale={player.disconnected}
         src={player.avatarUrl}
         alt={player.username}
         referrerpolicy="no-referrer"
       />
       <div class="flex-grow flex flex-col justify-center items-start ml-4 pr-10">
-        <span class="text-white font-semibold">{player.username}</span>
+        <span class="font-semibold" class:text-zinc-500={player.disconnected}>
+          {player.username}
+        </span>
         {#if player.score !== null}
           <span class="text-zinc-300 italic text-xs">
             {player.score} points
           </span>
         {/if}
       </div>
-      {#if player.id === artistId}
+      {#if player.disconnected}
+        <DisconnectedIcon class="w-8 fill-zinc-500" />
+      {:else if player.id === artistId}
         <ArtistIcon class="w-8 fill-yellow-500" />
       {:else}
         <div

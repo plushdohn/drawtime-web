@@ -6,14 +6,41 @@ export function subscribeToGameUpdates(
   updater: (fn: (s: GameState) => GameState) => void
 ) {
   socket.on("playerJoined", (playerInfo) => {
-    updater((s) => ({
-      ...s,
-      players: [...s.players, { ...playerInfo, score: 0, guessIndex: null }],
-    }));
+    updater((s) => {
+      if (s.players.find((p) => p.id === playerInfo.id)) {
+        return {
+          ...s,
+          players: s.players.map((p) => {
+            if (p.id === playerInfo.id) {
+              return {
+                ...p,
+                disconnected: false,
+              };
+            }
+
+            return p;
+          }),
+        };
+      } else {
+        return {
+          ...s,
+          players: [
+            ...s.players,
+            { ...playerInfo, score: 0, guessIndex: null, disconnected: false },
+          ],
+        };
+      }
+    });
   });
 
   socket.on("playerLeft", (playerId) =>
-    updater((s) => ({ ...s, players: s.players.filter((p) => p.id !== playerId) }))
+    updater((s) => ({
+      ...s,
+      players: s.players.map((p) => {
+        if (p.id === playerId) return { ...p, disconnected: true };
+        return p;
+      }),
+    }))
   );
 
   socket.on("roundStarted", (round, artist, choices) => {
