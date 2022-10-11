@@ -50,6 +50,7 @@ export function subscribeToGameUpdates(
       currentRound: round,
       artist,
       choices: choices ? choices : null,
+      players: s.players.map((p) => ({ ...p, guessIndex: null })),
     }));
   });
 
