@@ -26,7 +26,12 @@
   function onBatchAddWords() {
     if (!batchInputValue) return;
 
-    words = [...words, ...batchInputValue.split(",").map((w) => w.trim())];
+    const batchWords = batchInputValue.split(",").map((w) => w.trim());
+
+    words = [
+      ...words,
+      ...batchWords.filter((w) => batchWords.indexOf(w) === batchWords.lastIndexOf(w)),
+    ];
 
     batchInputValue = "";
 

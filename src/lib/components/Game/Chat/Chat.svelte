@@ -9,6 +9,8 @@
     subscribeToChatEvents,
   } from "$lib/logic/client/live/chat";
   import type { ExtendedSocket } from "$lib/logic/client/live/types";
+  import RoundStartingMessage from "./RoundStartingMessage.svelte";
+  import CloseGuessMessage from "./CloseGuessMessage.svelte";
 
   export let phase: GamePhase;
   export let artistId: string;
@@ -17,7 +19,7 @@
   export let players: Player[];
   export let socket: ExtendedSocket;
 
-  let events: (
+  type ComponentChatEvent =
     | {
         kind: ChatEventKind.MESSAGE;
         payload: {
@@ -29,9 +31,22 @@
         kind: ChatEventKind.CORRECT_GUESS;
         payload: { guesserName: string };
       }
-  )[] = [];
+    | {
+        kind: ChatEventKind.ROUND_STARTED;
+        payload: {
+          artistName: string;
+        };
+      }
+    | {
+        kind: ChatEventKind.CLOSE_GUESS;
+        payload: string;
+      };
+
+  let events: ComponentChatEvent[] = [];
   let inputValue = "";
   let chatDiv: HTMLElement;
+
+  let pending = false;
 
   afterUpdate(() => {
     chatDiv.scrollTop = chatDiv.scrollHeight;
@@ -46,16 +61,13 @@
           return console.warn("Received a message from an unknown player, ignoring.");
         }
 
-        events = [
-          ...events,
-          {
-            kind: ChatEventKind.MESSAGE,
-            payload: {
-              senderName: player.username,
-              contents: e.payload.contents,
-            },
+        pushEvent({
+          kind: ChatEventKind.MESSAGE,
+          payload: {
+            senderName: player.username,
+            contents: e.payload.contents,
           },
-        ];
+        });
       } else if (e.kind === ChatEventKind.CORRECT_GUESS) {
         const player = players.find((p) => p.id === e.payload);
 
@@ -63,20 +75,32 @@
           return console.warn("Received a guess from an unknown player, ignoring.");
         }
 
-        events = [
-          ...events,
-          {
-            kind: ChatEventKind.CORRECT_GUESS,
-            payload: {
-              guesserName: player.username,
-            },
+        pushEvent({
+          kind: ChatEventKind.CORRECT_GUESS,
+          payload: {
+            guesserName: player.username,
           },
-        ];
+        });
+      } else if (e.kind === ChatEventKind.ROUND_STARTED) {
+        const artist = players.find((p) => p.id === e.payload);
+
+        if (!artist) {
+          return console.warn("Received a round start event with an artist that doesn't exist.");
+        }
+
+        pushEvent({
+          kind: ChatEventKind.ROUND_STARTED,
+          payload: { artistName: artist.username },
+        });
       }
     });
 
     return unsub;
   });
+
+  function pushEvent(event: ComponentChatEvent) {
+    events = [...events, event];
+  }
 
   async function handleSubmit(e: Event) {
     e.preventDefault();
@@ -88,7 +112,20 @@
         artistId !== userId &&
         clue.length === inputValue.length
       ) {
-        guess(socket, inputValue.toLowerCase());
+        pending = true;
+
+        try {
+          const res = await guess(socket, inputValue.toLowerCase());
+
+          if ("close" in res) {
+            console.log("CLOSE GUESS DETECTED");
+            pushEvent({ kind: ChatEventKind.CLOSE_GUESS, payload: inputValue });
+          }
+        } catch {
+          console.warn("An error occurred while guessing, ignoring.");
+        } finally {
+          pending = false;
+        }
       } else {
         sendChatMessage(socket, inputValue);
       }
@@ -112,6 +149,10 @@
         </div>
       {:else if event.kind === ChatEventKind.CORRECT_GUESS}
         <CorrectGuessMessage guesserName={event.payload.guesserName} />
+      {:else if event.kind === ChatEventKind.ROUND_STARTED}
+        <RoundStartingMessage artistName={event.payload.artistName} />
+      {:else if event.kind === ChatEventKind.CLOSE_GUESS}
+        <CloseGuessMessage guess={event.payload} />
       {/if}
     {/each}
   </div>
@@ -119,7 +160,8 @@
     <input
       type="text"
       placeholder="Guess or chat..."
-      class="w-full bg-zinc-700 p-4 rounded text-white"
+      class="w-full bg-zinc-700 p-4 rounded text-white disabled:cursor-not-allowed disabled:text-zinc-400"
+      disabled={pending}
       bind:value={inputValue}
     />
   </form>

@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { verifyCaptchaToken } from "$lib/logic/server/captcha";
 import { createTopicWithWords } from "$lib/logic/server/database";
 import { getTopicThumbnailsFromBase64 } from "$lib/logic/server/images";
@@ -23,7 +24,7 @@ export const POST: RequestHandler = async (event) => {
   // TODO: Check if user is subscriber or moderator
   // before validating topic
 
-  const parseResult = createTopicSchema().extend({ captchaToken: z.string() }).safeParse(body);
+  const parseResult = createTopicSchema(dev).extend({ captchaToken: z.string() }).safeParse(body);
 
   if (!parseResult.success) throw error(400, "Invalid topic details");
 

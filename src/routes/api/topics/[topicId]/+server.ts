@@ -4,6 +4,7 @@ import { getTopicThumbnailsFromBase64 } from "$lib/logic/server/images";
 import { uploadTopicThumbs } from "$lib/logic/server/storage";
 import { createTopicSchema } from "$lib/logic/shared-types";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
+import { dev } from "$app/environment";
 import { z } from "zod";
 
 export const PATCH: RequestHandler = async (event) => {
@@ -29,7 +30,7 @@ export const PATCH: RequestHandler = async (event) => {
   // TODO: Check if user is subscriber or moderator
   // before validating topic
 
-  const parseResult = createTopicSchema()
+  const parseResult = createTopicSchema(dev)
     .extend({ thumbnail: z.string().nullable(), captchaToken: z.string() })
     .safeParse(body);
 

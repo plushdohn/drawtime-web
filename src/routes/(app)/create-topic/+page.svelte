@@ -10,6 +10,7 @@
   import TopicFormWords from "$lib/components/TopicForm/TopicFormWords.svelte";
   import { createForm } from "$lib/logic/client/form";
   import { createTopicSchema } from "$lib/logic/shared-types";
+  import { dev } from "$app/environment";
   import axios from "axios";
   import { z } from "zod";
 
@@ -18,7 +19,7 @@
   let error: string | null = null;
 
   const { form, errors, validate, handleSubmit } = createForm(
-    createTopicSchema().extend({ captchaToken: z.string() }),
+    createTopicSchema(dev).extend({ captchaToken: z.string() }),
     {
       name: "",
       unlisted: false,

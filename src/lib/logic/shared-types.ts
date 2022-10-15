@@ -66,7 +66,10 @@ export interface ClientToServerEvents {
   joinGame: (gameId: string, callback: (p: AsyncResponse<GameState>) => void) => void;
   startGame: () => void;
   chooseWord: (choice: string) => void;
-  guess: (guess: string) => void;
+  guess: (
+    guess: string,
+    callback: (p: AsyncResponse<{ close: boolean } | { success: boolean }>) => void
+  ) => void;
   sendMessage: (contents: string) => void;
   updateDrawing: (update: AnyDrawingEvent) => void;
 }

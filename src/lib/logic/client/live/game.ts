@@ -26,7 +26,12 @@ export function subscribeToGameUpdates(
           ...s,
           players: [
             ...s.players,
-            { ...playerInfo, score: 0, guessIndex: null, disconnected: false },
+            {
+              ...playerInfo,
+              score: s.phase === GamePhase.Waiting ? null : 0,
+              guessIndex: null,
+              disconnected: false,
+            },
           ],
         };
       }
@@ -129,7 +134,6 @@ export function createGame(
         rounds: params.rounds,
       },
       (response) => {
-        console.log(response);
         if ("error" in response) reject(new Error(response.error));
         else resolve(response.body);
       }
@@ -155,5 +159,11 @@ export function chooseWord(socket: ExtendedSocket, choice: string) {
 }
 
 export function guess(socket: ExtendedSocket, guess: string) {
-  socket.emit("guess", guess);
+  return new Promise<{ close: boolean } | { success: boolean }>((resolve, reject) => {
+    socket.emit("guess", guess, (response) => {
+      console.log(response);
+      if ("error" in response) reject(new Error(response.error));
+      else resolve(response.body);
+    });
+  });
 }

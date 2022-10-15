@@ -2,7 +2,7 @@ import type { AnyDrawingEvent } from "$lib/logic/shared-types";
 import type { ExtendedSocket } from "./types";
 
 export function updateDrawing(socket: ExtendedSocket, update: AnyDrawingEvent) {
-  socket.emit("updateDrawing", update);
+  socket.volatile.emit("updateDrawing", update);
 }
 
 export function subscribeToDrawingUpdates(

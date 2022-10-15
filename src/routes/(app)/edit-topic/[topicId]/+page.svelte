@@ -13,6 +13,7 @@
   import type { PageData } from "./$types";
   import axios from "axios";
   import { z } from "zod";
+  import { dev } from "$app/environment";
 
   let showModal = false;
   let pending = false;
@@ -21,7 +22,7 @@
   export let data: PageData;
 
   const { form, errors, validate, handleSubmit } = createForm(
-    createTopicSchema().extend({ captchaToken: z.string(), thumbnail: z.string().nullable() }),
+    createTopicSchema(dev).extend({ captchaToken: z.string(), thumbnail: z.string().nullable() }),
     {
       name: data.topic.name,
       unlisted: data.topic.unlisted,

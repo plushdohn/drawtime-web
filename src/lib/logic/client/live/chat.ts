@@ -3,6 +3,10 @@ import type { ExtendedSocket } from "./types";
 export enum ChatEventKind {
   MESSAGE = "MESSAGE",
   CORRECT_GUESS = "CORRECT_GUESS",
+  ROUND_STARTED = "ROUND_STARTED",
+  PLAYER_JOINED = "PLAYER_JOINED",
+  PLAYER_LEFT = "PLAYER_LEFT",
+  CLOSE_GUESS = "CLOSE_GUESS",
 }
 
 type ChatMessage = {
@@ -18,7 +22,12 @@ type CorrectGuess = {
   payload: string;
 };
 
-export type AnyChatEvent = ChatMessage | CorrectGuess;
+type RoundStarting = {
+  kind: ChatEventKind.ROUND_STARTED;
+  payload: string;
+};
+
+export type AnyChatEvent = ChatMessage | CorrectGuess | RoundStarting;
 
 export function subscribeToChatEvents(
   socket: ExtendedSocket,
@@ -41,12 +50,21 @@ export function subscribeToChatEvents(
     });
   }
 
+  function handleRoundStarting(round: number, artistId: string) {
+    listener({
+      kind: ChatEventKind.ROUND_STARTED,
+      payload: artistId,
+    });
+  }
+
   socket.on("chatMessage", handleChatMessage);
   socket.on("correctGuess", handleCorrectGuess);
+  socket.on("roundStarted", handleRoundStarting);
 
   return () => {
     socket.off("chatMessage", handleChatMessage);
     socket.off("correctGuess", handleCorrectGuess);
+    socket.off("roundStarted", handleRoundStarting);
   };
 }
 
