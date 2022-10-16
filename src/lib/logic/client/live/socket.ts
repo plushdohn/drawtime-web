@@ -41,12 +41,14 @@ export const connectToGameServer = (authToken: string) => {
       resolve(sock);
     });
 
-    sock.on("disconnect", () => {
+    sock.on("disconnect", (reason) => {
       gameServerConnectionStore.set({
         pending: false,
         error: "Socket was closed",
         socket: null,
       });
+
+      console.log("DISCONNECTED DUE TO REASON:" + reason);
 
       reject(new Error("Couldn't reach game servers"));
     });

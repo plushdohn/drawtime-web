@@ -125,6 +125,8 @@
           console.warn("An error occurred while guessing, ignoring.");
         } finally {
           pending = false;
+
+          document.getElementById("guess-input")?.focus();
         }
       } else {
         sendChatMessage(socket, inputValue);
@@ -159,6 +161,8 @@
   <form class="w-full p-4" on:submit={handleSubmit}>
     <input
       type="text"
+      id="guess-input"
+      autocomplete="off"
       placeholder="Guess or chat..."
       class="w-full bg-zinc-700 p-4 rounded text-white disabled:cursor-not-allowed disabled:text-zinc-400"
       disabled={pending}

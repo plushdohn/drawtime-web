@@ -41,11 +41,11 @@
           on:click={reconnect}
           class="w-full bg-red-500 font-semibold rounded-sm py-2 mt-8 hover:bg-red-400 focus:bg-red-400"
         >
-          Retry
+          Reconnect
         </button>
       {:else}
         <Spinner class="w-8" />
-        <span class="text-zinc-400 font-semibold mt-4">Connecting to server...</span>
+        <span class="text-zinc-400 mt-4">Connecting to server...</span>
       {/if}
     </div>
   {/if}

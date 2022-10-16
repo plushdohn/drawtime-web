@@ -58,13 +58,11 @@
 {:else}
   <div class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm">
     {#if error}
-      <span class="text-4xl text-zinc-400 font-bold">:(</span>
-      <span class="text-zinc-400 font-semibold mt-4">
-        Couldn't join game: {error}
-      </span>
+      <span class="text-4xl text-white font-bold">Oh no!</span>
+      <span class="text-zinc-400 mt-4">Couldn't join game, it likely doesn't exist.</span>
     {:else}
       <Spinner class="w-8" />
-      <span class="text-zinc-400 font-semibold mt-4">Joining game...</span>
+      <span class="text-zinc-400 mt-4">Joining game...</span>
     {/if}
   </div>
 {/if}

@@ -57,7 +57,7 @@
 </script>
 
 <div class="relative flex flex-col h-full">
-  <Clue {...game} {userId} />
+  <Clue artist={game.artist} clue={game.clue} phase={game.phase} secret={game.secret} {userId} />
   <canvas
     class="h-[88%] bg-white aspect-square"
     width="512"
@@ -68,7 +68,7 @@
   <div class="w-full bg-white" style="height: 6%;" />
 
   {#if game.phase === GamePhase.Drawing}
-    <GameTimer {...game} />
+    <GameTimer phase={game.phase} drawingTime={game.drawingTime} />
   {/if}
 
   {#if game.phase !== GamePhase.Drawing}

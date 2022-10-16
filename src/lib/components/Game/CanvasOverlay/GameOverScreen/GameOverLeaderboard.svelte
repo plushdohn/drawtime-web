@@ -23,7 +23,7 @@
     {#each sortedPlayers.slice(1) as player, i (player.id)}
       <div class="flex items-center w-full font-bold text-xl py-2 whitespace-nowrap">
         <span class="text-white font-semibold mr-4">{i + 2}</span>
-        <div class="flex items-center bg-zinc-700 rounded-full pr-4">
+        <div class="flex items-center bg-zinc-700 w-full rounded-full pr-4">
           <img src={player.avatarUrl} class="w-10 h-10 rounded-full mr-3" alt="" />
           <span class="text-white font-semibold text-base mr-12 w-full text-left">
             {player.username}
