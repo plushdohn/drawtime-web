@@ -9,8 +9,10 @@
   import { joinGame, subscribeToGameUpdates } from "$lib/logic/client/live/game";
   import AudioManager from "./AudioManager.svelte";
   import type { ExtendedSocket } from "$lib/logic/client/live/types";
+  import ReconnectionBox from "./ReconnectionBox.svelte";
 
   export let socket: ExtendedSocket;
+  export let socketError: string | null;
   export let gameId: string;
   export let userId: string;
 
@@ -54,6 +56,10 @@
     />
 
     <AudioManager {socket} />
+
+    {#if socketError !== null}
+      <ReconnectionBox />
+    {/if}
   </div>
 {:else}
   <div class="p-16 flex flex-col justfy-center items-center bg-zinc-800 rounded-sm">

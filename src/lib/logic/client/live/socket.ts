@@ -18,10 +18,9 @@ export const gameServerConnectionStore = writable<GameServerConnectionStore>({
 export const connectToGameServer = (authToken: string) => {
   return new Promise<Socket>((resolve, reject) => {
     const sock = io(PUBLIC_GAMESERVER_URL, {
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 1,
       transports: ["websocket"],
+      reconnection: false,
+      reconnectionAttempts: 5,
       query: {
         token: authToken,
       },
@@ -34,6 +33,19 @@ export const connectToGameServer = (authToken: string) => {
     });
 
     sock.on("connect", () => {
+      // After connecting, we add a "reconnect" query
+      // flag to the socket, so that the server knows
+      // we are reconnecting when we open the socket
+      // again, and can reassign us to the same room.
+      sock.io.opts.query = {
+        token: authToken,
+        reconnect: true,
+      };
+
+      // Enable auto-reconnection only after we
+      // successfully connected once.
+      sock.io.reconnection(true);
+
       gameServerConnectionStore.set({
         pending: false,
         error: null,
@@ -43,27 +55,36 @@ export const connectToGameServer = (authToken: string) => {
       resolve(sock);
     });
 
-    sock.on("disconnect", (reason) => {
-      gameServerConnectionStore.set({
-        pending: false,
-        error: "Socket was closed",
-        socket: null,
-      });
+    sock.on("connect_error", (err) => {
+      if (err.message === "refused") {
+        sock.disconnect();
 
-      console.log("DISCONNECTED DUE TO REASON:" + reason);
+        gameServerConnectionStore.set({
+          pending: false,
+          error: "Server refused the connection",
+          socket: null,
+        });
+      }
 
       reject(new Error("Couldn't reach game servers"));
     });
 
-    sock.on("connect_error", (err) => {
+    sock.on("disconnect", (reason) => {
+      console.log("DISCONNECTED DUE TO REASON:" + reason);
+
+      gameServerConnectionStore.set({
+        pending: true,
+        error: reason,
+        socket: sock,
+      });
+    });
+
+    sock.io.on("reconnect_failed", () => {
       gameServerConnectionStore.set({
         pending: false,
-        error: "Socket encountered an error",
+        error: "Reconnection timed out",
         socket: null,
       });
-
-      console.log(err);
-      reject(new Error("Couldn't reach game servers"));
     });
   });
 };
