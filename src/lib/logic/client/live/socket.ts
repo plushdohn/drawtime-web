@@ -18,7 +18,9 @@ export const gameServerConnectionStore = writable<GameServerConnectionStore>({
 export const connectToGameServer = (authToken: string) => {
   return new Promise<Socket>((resolve, reject) => {
     const sock = io(PUBLIC_GAMESERVER_URL, {
-      reconnection: false,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 1,
       transports: ["websocket"],
       query: {
         token: authToken,
