@@ -1,21 +1,18 @@
 <script lang="ts">
   import TopicCarousel from "$lib/components/TopicCarousel/index.svelte";
   import type { PageData } from "./$types";
-  import GameCreationModal from "$lib/components/GameCreationModal.svelte";
-  import { goto } from "$app/navigation";
+  import StartGameModal from "$lib/components/StartGameModal/index.svelte";
 
   export let data: PageData;
 
-  $: accessToken = data.session.accessToken as string;
+  const auth = data.session.user
+    ? { userId: data.session.user.id, accessToken: data.session.accessToken }
+    : null;
 
   let topicId: string | null = null;
 
   async function handleTopicSelection(id: string) {
-    if (data.session.user) {
-      topicId = id;
-    } else {
-      await goto("/login");
-    }
+    topicId = id;
   }
 
   function handleModalClosure() {
@@ -38,6 +35,6 @@
   <TopicCarousel topics={data.newTopics} onTopicSelected={handleTopicSelection} />
 
   {#if topicId !== null}
-    <GameCreationModal {topicId} onCancel={handleModalClosure} {accessToken} />
+    <StartGameModal {topicId} onCancel={handleModalClosure} {auth} />
   {/if}
 </div>

@@ -1,4 +1,5 @@
-import { GamePhase, type GameState } from "$lib/logic/shared-types";
+import { GamePhase, type GameModel, type GameState } from "$lib/logic/shared-types";
+import { supabaseClient } from "../supabase";
 import type { ExtendedSocket } from "./types";
 
 export function subscribeToGameUpdates(
@@ -166,4 +167,20 @@ export function guess(socket: ExtendedSocket, guess: string) {
       else resolve(response.body);
     });
   });
+}
+
+export async function findGame(topicId: string) {
+  const { data: game, error } = await supabaseClient
+    .from<GameModel>("games")
+    .select("id")
+    .eq("topic", topicId)
+    .eq("is_private", false)
+    .limit(1)
+    .single();
+
+  if (error) throw error;
+
+  console.log("FOUND GAME WITH ID:" + game.id);
+
+  return game.id;
 }

@@ -5,8 +5,6 @@
   function handleGoogleLogin() {
     const next = $page.url.searchParams.get("next");
 
-    console.log(next);
-
     signInWithGoogle(next ?? undefined);
   }
 </script>

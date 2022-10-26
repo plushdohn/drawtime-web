@@ -1,6 +1,6 @@
 import { PUBLIC_GAMESERVER_URL } from "$env/static/public";
-import { io, type Socket } from "socket.io-client";
-import { writable } from "svelte/store";
+import { io } from "socket.io-client";
+import { get, writable } from "svelte/store";
 import type { ExtendedSocket } from "./types";
 
 type GameServerConnectionStore = {
@@ -15,16 +15,11 @@ export const gameServerConnectionStore = writable<GameServerConnectionStore>({
   error: null,
 });
 
-export const connectToGameServer = (authToken: string) => {
-  return new Promise<Socket>((resolve, reject) => {
-    const sock = io(PUBLIC_GAMESERVER_URL, {
-      transports: ["websocket"],
-      reconnection: false,
-      reconnectionAttempts: 5,
-      query: {
-        token: authToken,
-      },
-    });
+export const connectToGameServer = (
+  params: { userId: string; authToken: string } | { guestUsername: string }
+) => {
+  return new Promise<ExtendedSocket>((resolve, reject) => {
+    const storeValues = get(gameServerConnectionStore);
 
     gameServerConnectionStore.set({
       pending: true,
@@ -32,20 +27,27 @@ export const connectToGameServer = (authToken: string) => {
       socket: null,
     });
 
-    sock.on("connect", () => {
-      // After connecting, we add a "reconnect" query
-      // flag to the socket, so that the server knows
-      // we are reconnecting when we open the socket
-      // again, and can reassign us to the same room.
-      sock.io.opts.query = {
-        token: authToken,
-        reconnect: true,
-      };
+    let sock: ExtendedSocket;
 
-      // Enable auto-reconnection only after we
-      // successfully connected once.
-      sock.io.reconnection(true);
+    if (storeValues.socket !== null) {
+      storeValues.socket.disconnect().connect();
 
+      sock = storeValues.socket;
+    } else {
+      sock = io(PUBLIC_GAMESERVER_URL, {
+        transports: ["websocket"],
+        reconnection: false,
+        auth:
+          "authToken" in params
+            ? { id: params.userId, token: params.authToken }
+            : {
+                id: crypto.randomUUID(),
+                username: params.guestUsername,
+              },
+      }) as ExtendedSocket;
+    }
+
+    sock.once("connect", () => {
       gameServerConnectionStore.set({
         pending: false,
         error: null,
@@ -55,35 +57,25 @@ export const connectToGameServer = (authToken: string) => {
       resolve(sock);
     });
 
-    sock.on("connect_error", (err) => {
-      if (err.message === "refused") {
-        sock.disconnect();
+    sock.once("connect_error", (err) => {
+      console.log("CONNECT ERROR:" + err);
 
-        gameServerConnectionStore.set({
-          pending: false,
-          error: "Server refused the connection",
-          socket: null,
-        });
-      }
+      gameServerConnectionStore.set({
+        pending: false,
+        error: "Server refused the connection",
+        socket: sock,
+      });
 
       reject(new Error("Couldn't reach game servers"));
     });
 
-    sock.on("disconnect", (reason) => {
+    sock.once("disconnect", (reason) => {
       console.log("DISCONNECTED DUE TO REASON:" + reason);
 
       gameServerConnectionStore.set({
-        pending: true,
+        pending: false,
         error: reason,
         socket: sock,
-      });
-    });
-
-    sock.io.on("reconnect_failed", () => {
-      gameServerConnectionStore.set({
-        pending: false,
-        error: "Reconnection timed out",
-        socket: null,
       });
     });
   });

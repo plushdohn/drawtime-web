@@ -8,6 +8,7 @@
   import { deleteTopicWithWords } from "$lib/logic/client/database";
   import RedoIcon from "../icons/RedoIcon.svelte";
   import Spinner from "../Spinner.svelte";
+  import axios from "axios";
 
   export let topic: { id: string; name: string; unlisted: boolean };
   export let deletionCallback: (topicId: string) => void;
@@ -29,7 +30,7 @@
     deletionPending = true;
 
     try {
-      await deleteTopicWithWords(topic.id);
+      await axios.delete(`/api/topics/${topic.id}`);
 
       deletionCallback(topic.id);
     } catch (err) {
@@ -50,19 +51,11 @@
     </span>
   </div>
 
-  <div
-    class="p-3 flex lg:flex-col justify-center items-center gap-3 border-l-2 border-zinc-900"
-  >
-    <a
-      href={`/edit-topic/${topic.id}`}
-      class="p-2 rounded bg-yellow-500 hover:bg-yellow-400"
-    >
+  <div class="p-3 flex lg:flex-col justify-center items-center gap-3 border-l-2 border-zinc-900">
+    <a href={`/edit-topic/${topic.id}`} class="p-2 rounded bg-yellow-500 hover:bg-yellow-400">
       <EditTopicIcon class="w-6 fill-white" />
     </a>
-    <button
-      on:click={handleDeleteClick}
-      class="p-2 rounded bg-red-500 hover:bg-red-400"
-    >
+    <button on:click={handleDeleteClick} class="p-2 rounded bg-red-500 hover:bg-red-400">
       <RemoveIcon class="w-6 fill-white" />
     </button>
   </div>
@@ -75,15 +68,10 @@
       {#if deletionPending}
         <span class="font-semibold text-zinc-400">Deleting...</span>
         <Spinner class="w-6" />
-      {:else if deletionError !== null}<span
-          class="font-semibold text-zinc-400"
-        >
+      {:else if deletionError !== null}<span class="font-semibold text-zinc-400">
           An error occurred, retry?
         </span>
-        <button
-          on:click={handleDelete}
-          class="p-2 rounded bg-red-500 hover:bg-red-400"
-        >
+        <button on:click={handleDelete} class="p-2 rounded bg-red-500 hover:bg-red-400">
           <RedoIcon class="w-6 fill-white" />
         </button>
         <button
@@ -94,10 +82,7 @@
         </button>
       {:else}
         <span class="font-semibold text-zinc-400">Delete topic?</span>
-        <button
-          on:click={handleDelete}
-          class="p-2 rounded bg-red-500 hover:bg-red-400"
-        >
+        <button on:click={handleDelete} class="p-2 rounded bg-red-500 hover:bg-red-400">
           <ConfirmIcon class="w-6 fill-white" />
         </button>
         <button

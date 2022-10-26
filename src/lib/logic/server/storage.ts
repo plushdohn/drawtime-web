@@ -32,3 +32,19 @@ export async function uploadProfilePicture(userId: string, picture: Buffer) {
 
   return bucket.getPublicUrl(path).publicURL as string;
 }
+
+export async function deleteTopicThumbnails(topicId: string) {
+  const bucket = supabaseServer.storage.from("public");
+
+  const folder = `images/topics/${topicId}`;
+
+  const { data: list, error } = await bucket.list(folder);
+
+  if (error) throw error;
+
+  const toRemove = list!.map((t) => `${folder}/${t.name}`);
+
+  const { error: deletionError } = await bucket.remove(toRemove);
+
+  if (deletionError) throw deletionError;
+}

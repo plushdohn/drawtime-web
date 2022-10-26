@@ -1,11 +1,12 @@
 import { verifyCaptchaToken } from "$lib/logic/server/captcha";
 import { updateTopicWithWords } from "$lib/logic/server/database";
 import { getTopicThumbnailsFromBase64 } from "$lib/logic/server/images";
-import { uploadTopicThumbs } from "$lib/logic/server/storage";
-import { createTopicSchema } from "$lib/logic/shared-types";
+import { deleteTopicThumbnails, uploadTopicThumbs } from "$lib/logic/server/storage";
+import { createTopicSchema, type TopicModel } from "$lib/logic/shared-types";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { z } from "zod";
+import { supabaseServer } from "$lib/logic/server/supabase";
 
 export const PATCH: RequestHandler = async (event) => {
   const user = event.locals.session.user;
@@ -82,6 +83,49 @@ export const PATCH: RequestHandler = async (event) => {
     });
   } catch (err) {
     throw error(500, "Couldn't persist topic changes:" + (err as Error).message);
+  }
+
+  return json({ success: true });
+};
+
+export const DELETE: RequestHandler = async (event) => {
+  const user = event.locals.session.user;
+
+  if (!user) {
+    throw error(403, "Unauthenticated");
+  }
+
+  const topicId = event.params.topicId;
+
+  if (!topicId) {
+    throw error(400, "Invalid topic ID");
+  }
+
+  // Make sure user owns the topic
+  const { data: topic, error: fetchErr } = await supabaseServer
+    .from<TopicModel>("topics")
+    .select("id, creator")
+    .eq("id", topicId)
+    .single();
+
+  if (fetchErr) throw error(404, "Topic not found");
+
+  if (topic.creator !== user.id) throw error(403, "Topic not owned");
+
+  // Delete topic, words are deleted on cascade
+  const { error: deleteErr } = await supabaseServer
+    .from<TopicModel>("topics")
+    .delete()
+    .eq("id", topicId)
+    .single();
+
+  if (deleteErr) throw error(500, "Couldn't delete topic");
+
+  // Delete topic thumbnail
+  try {
+    await deleteTopicThumbnails(topicId);
+  } catch {
+    throw error(500, "Couldn't delete thumbnails");
   }
 
   return json({ success: true });

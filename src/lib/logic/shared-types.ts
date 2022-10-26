@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const guestUsernameSchema = z
+  .string()
+  .min(4, "Must have at least 4 characters.")
+  .max(32, "Can't be longer than 32 characters.");
+
+export const gameCreationSchema = z.object({
+  drawingTime: z.number().min(10).max(90),
+  rounds: z.number().min(1).max(10),
+});
+
 /**
  * Topic schema, used for form validation on the client
  * and topic validation on the server before adding
@@ -10,7 +20,7 @@ export function createTopicSchema(subscriber?: boolean) {
     name: z
       .string()
       .min(5, "Must contain at least 5 characters")
-      .max(64, "Can't be more than 64 characters"),
+      .max(64, "Can't be longer than 64 characters"),
     nsfw: z.boolean(),
     unlisted: z.boolean(),
     thumbnail: z.string({
@@ -135,6 +145,7 @@ export type GameModel = {
   choices: string[] | null;
   secret: string | null;
   clue: string | null;
+  is_private: boolean;
 };
 
 export type PlayerModel = {
