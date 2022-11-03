@@ -1,7 +1,7 @@
 <script lang="ts">
   import { searchTopics } from "$lib/logic/client/database";
   import type { TopicWithCreator } from "$lib/logic/shared-types";
-  import { debounce } from "lodash";
+  import debounce from "lodash/debounce";
   import TopicThumbnail from "../TopicThumbnail.svelte";
 
   let results: TopicWithCreator[] = [];
