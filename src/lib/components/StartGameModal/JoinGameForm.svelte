@@ -59,7 +59,7 @@
   </div>
 {:else}
   <div class="p-8 sm:p-16 flex flex-col items-center bg-zinc-900 rounded-sm max-w-sm w-full">
-    <span class="text-3xl font-bold">Oh no!</span>
+    <span class="text-3xl font-bold text-white">Oh no!</span>
 
     <span class="text-zinc-400 text-center mt-1.5">
       {#if error === ErrorPhase.Connection}
@@ -72,14 +72,14 @@
     <button
       type="button"
       on:click={findAndJoin}
-      class="bg-red-500 hover:bg-red-400 font-semibold rounded-sm mt-8 py-3 w-full"
+      class="text-white bg-red-500 hover:bg-red-400 font-semibold rounded-sm mt-8 py-3 w-full"
     >
       Retry
     </button>
     <button
       type="button"
       on:click={onCancel}
-      class="bg-zinc-700 hover:bg-zinc-600 font-semibold rounded-sm mt-3 py-3 w-full"
+      class="text-white bg-zinc-700 hover:bg-zinc-600 font-semibold rounded-sm mt-3 py-3 w-full"
     >
       Cancel
     </button>

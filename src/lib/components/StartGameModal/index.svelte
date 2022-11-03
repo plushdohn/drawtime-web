@@ -46,10 +46,10 @@
   }
 </script>
 
-<div class="fixed p-8 inset-0 w-full h-full bg-[#000000cc] flex justify-center items-center z-10">
+<div class="fixed p-8 inset-0 w-full h-full bg-[#000000cc] flex justify-center items-center z-30">
   {#if status === InterfaceStatus.Choosing}
     <div class="relative p-8 sm:p-16 flex flex-col bg-zinc-900 rounded-sm w-full max-w-md">
-      <span class="text-4xl font-bold">Let's play!</span>
+      <span class="text-4xl font-bold text-white">Let's play!</span>
       {#if auth === null}
         <span class="text-zinc-400 mt-4 mb-1">What's your name?</span>
         <input
@@ -75,14 +75,14 @@
       <button
         disabled={!$valid}
         on:click={handleChooseJoinClick}
-        class="mt-6 bg-yellow-500 hover:bg-yellow-400 rounded-sm py-2.5 w-full font-semibold disabled:bg-zinc-600 disabled:cursor-not-allowed"
+        class="mt-6 text-white bg-yellow-500 hover:bg-yellow-400 rounded-sm py-2.5 w-full font-semibold disabled:bg-zinc-600 disabled:cursor-not-allowed"
       >
         FIND GAME
       </button>
       <button
         disabled={!$valid}
         on:click={handleChooseCreateClick}
-        class="mt-4 bg-red-500 hover:bg-red-400 rounded-sm w-full py-2.5 font-semibold  disabled:bg-zinc-600 disabled:cursor-not-allowed"
+        class="mt-4 text-white bg-red-500 hover:bg-red-400 rounded-sm w-full py-2.5 font-semibold  disabled:bg-zinc-600 disabled:cursor-not-allowed"
       >
         CREATE GAME
       </button>

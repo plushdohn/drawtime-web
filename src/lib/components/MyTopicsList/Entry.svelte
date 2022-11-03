@@ -5,7 +5,6 @@
   import { slide } from "svelte/transition";
   import ConfirmIcon from "../icons/ConfirmIcon.svelte";
   import CloseIcon from "../icons/CloseIcon.svelte";
-  import { deleteTopicWithWords } from "$lib/logic/client/database";
   import RedoIcon from "../icons/RedoIcon.svelte";
   import Spinner from "../Spinner.svelte";
   import axios from "axios";
@@ -42,9 +41,9 @@
 </script>
 
 <div class="relative w-full rounded-sm flex mb-4 bg-zinc-800">
-  <div class="w-40 lg:w-52 shrink-0">
+  <a class="w-40 lg:w-52 shrink-0" href={`/topic/${topic.id}`}>
     <TopicThumbnail topicId={topic.id} class="w-full" />
-  </div>
+  </a>
   <div class="w-full flex flex-col justify-center p-3 overflow-hidden">
     <span class="font-semibold text-lg truncate">
       {topic.name}

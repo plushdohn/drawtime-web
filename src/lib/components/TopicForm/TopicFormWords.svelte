@@ -26,7 +26,7 @@
   function onBatchAddWords() {
     if (!batchInputValue) return;
 
-    const batchWords = batchInputValue.split(",").map((w) => w.trim());
+    const batchWords = batchInputValue.split(",").map((w) => w.trim().toLowerCase());
 
     words = [
       ...words,

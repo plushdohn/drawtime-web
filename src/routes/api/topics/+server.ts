@@ -66,7 +66,7 @@ export const POST: RequestHandler = async (event) => {
       creatorId: user.id,
     });
   } catch (err) {
-    throw error(500, "Couldn't persist topic");
+    throw error(500, "Couldn't persist topic:" + JSON.stringify(err));
   }
 
   /**

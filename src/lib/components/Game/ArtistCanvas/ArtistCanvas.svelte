@@ -14,17 +14,24 @@
   import { updateDrawing } from "$lib/logic/client/live/drawing";
   import BrushSizeSelector from "./BrushSizeSelector.svelte";
   import type { ExtendedSocket } from "$lib/logic/client/live/types";
+  import BrushButton from "./BrushButton.svelte";
+  import EraserButton from "./EraserButton.svelte";
 
   export let game: GameState;
   export let socket: ExtendedSocket;
   export let userId: string;
 
+  enum ToolKind {
+    Brush,
+    Eraser,
+    Bucket,
+  }
+
+  let canvas: HTMLCanvasElement;
+
+  let selectedTool: ToolKind = ToolKind.Brush;
   let color = "#000000";
   let size = 1;
-
-  function onColorChange(newColor: string) {
-    color = newColor;
-  }
 
   function drawableCanvas(node: HTMLCanvasElement) {
     let currentEvent: DrawingStartEvent | DrawingContinueEvent | null = null;
@@ -79,14 +86,14 @@
 
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = selectedTool === ToolKind.Brush ? color : "#ffffff";
       ctx.lineWidth = size;
 
       beginNewEvent({
         kind: DrawingEventKind.Start,
         sequence: [{ x, y }],
         size,
-        color,
+        color: selectedTool === ToolKind.Brush ? color : "#ffffff",
       });
     }
 
@@ -116,15 +123,49 @@
       },
     };
   }
+
+  function handleClear() {
+    const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    updateDrawing(socket, { kind: DrawingEventKind.Clear });
+  }
 </script>
 
 <div class="relative flex flex-col h-full">
   <Clue phase={game.phase} clue={game.clue} secret={game.secret} artist={game.artist} {userId} />
-  <canvas class="h-[88%] bg-white aspect-square" width="512" height="512" use:drawableCanvas />
-  <div class="w-full bg-zinc-800 flex justify-between items-center p-2" style="height: 6%;">
-    <ResetDrawingButton />
-    <BrushSizeSelector bind:value={size} />
-    <ColorPicker callback={onColorChange} selectedColor={color} />
+  <canvas
+    class="h-[89%] bg-white aspect-square cursor-cell"
+    width="512"
+    height="512"
+    use:drawableCanvas
+    bind:this={canvas}
+  />
+  <div class="w-full bg-zinc-800 flex justify-between items-center p-3" style="height: 5%;">
+    <div class="flex items-center gap-1">
+      <ResetDrawingButton on:click={handleClear} />
+
+      <BrushButton
+        selected={selectedTool === ToolKind.Brush}
+        callback={() => (selectedTool = ToolKind.Brush)}
+      />
+
+      <EraserButton
+        selected={selectedTool === ToolKind.Eraser}
+        callback={() => (selectedTool = ToolKind.Eraser)}
+      />
+    </div>
+
+    <div class="flex items-center gap-3">
+      {#if selectedTool === ToolKind.Brush || selectedTool === ToolKind.Eraser}
+        <BrushSizeSelector bind:size />
+        {#if selectedTool === ToolKind.Brush}
+          <ColorPicker bind:selectedColor={color} />
+        {/if}
+      {/if}
+    </div>
   </div>
 
   {#if game.phase === GamePhase.Drawing}

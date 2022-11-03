@@ -17,7 +17,7 @@
 
 <div class="absolute w-full h-full bg-[#000000aa] flex flex-col justify-center items-center">
   {#if game.phase === GamePhase.Waiting}
-    {#if game.players.length < (dev ? 2 : 2)}
+    {#if game.players.length < (dev ? 1 : 2)}
       <WaitingPlayersScreen />
     {:else if game.owner === userId}
       <HostWaitingScreen {socket} />

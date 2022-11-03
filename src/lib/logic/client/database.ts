@@ -1,4 +1,4 @@
-import type { WordModel, TopicModel } from "../shared-types";
+import type { WordModel, TopicModel, TopicWithCreator } from "../shared-types";
 import { supabaseClient } from "./supabase";
 
 export const deleteTopicWithWords = async (topicId: string) => {
@@ -36,3 +36,21 @@ export const getTopicWithWords = async (topicId: string) => {
     words: words.map((w) => w.word),
   };
 };
+
+export async function searchTopics(query: string) {
+  const words = query.split(" ");
+
+  const search = words.map((w) => `'${w}'`).join(` | `);
+
+  console.log(search);
+
+  const { data, error } = await supabaseClient
+    .from<TopicWithCreator>("topics")
+    .select("id, name, creator (username)")
+    .textSearch("name", search)
+    .limit(5);
+
+  if (error) throw error;
+
+  return data;
+}

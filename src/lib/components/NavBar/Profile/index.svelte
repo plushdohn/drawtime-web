@@ -25,7 +25,7 @@
   bind:this={button}
   on:click={toggleMenu}
   on:focusout={onMenuFocusOut}
-  class="relative flex items-center p-1 rounded-full cursor-pointer hover:bg-zinc-700"
+  class="shrink-0 relative flex items-center p-1 rounded-full cursor-pointer hover:bg-zinc-700"
   class:bg-zinc-700={isMenuOpen}
 >
   <img

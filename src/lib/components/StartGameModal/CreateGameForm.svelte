@@ -63,7 +63,7 @@
   </div>
 {:else if connectionError !== null || creationError !== null}
   <div class="p-8 sm:p-16 flex flex-col items-center bg-zinc-900 rounded-sm max-w-sm w-full">
-    <span class="text-3xl font-bold">Oh no!</span>
+    <span class="text-3xl font-bold text-white">Oh no!</span>
 
     <span class="text-zinc-400 text-center mt-1.5">
       {#if connectionError !== null}
@@ -76,26 +76,26 @@
     <button
       type="button"
       on:click={handleSubmit}
-      class="bg-red-500 hover:bg-red-400 font-semibold rounded-sm mt-8 py-3 w-full"
+      class="text-white bg-red-500 hover:bg-red-400 font-semibold rounded-sm mt-8 py-3 w-full"
     >
       Retry
     </button>
     <button
       type="button"
       on:click={onCancel}
-      class="bg-zinc-700 hover:bg-zinc-600 font-semibold rounded-sm mt-3 py-3 w-full"
+      class="text-white bg-zinc-700 hover:bg-zinc-600 font-semibold rounded-sm mt-3 py-3 w-full"
     >
       Cancel
     </button>
   </div>
 {:else}
   <form class="p-8 sm:p-16 flex flex-col bg-zinc-900 rounded-sm max-w-lg w-full">
-    <span class="font-bold text-4xl">Create game</span>
+    <span class="font-bold text-4xl text-white">Create game</span>
     <span class="text-zinc-400 mt-2 mb-4">Set the game's parameters</span>
 
-    <label for="drawingTime" class="font-semibold mt-3">Drawing time</label>
+    <label for="drawingTime" class="font-semibold mt-3 text-white">Drawing time</label>
     <div class="flex bg-zinc-800 rounded-sm p-3 mt-1">
-      <span class="font-semibold mr-3">{drawingTime}</span>
+      <span class="font-semibold mr-3 text-white">{drawingTime}</span>
       <input
         id="drawingTime"
         class="w-full accent-red-500"
@@ -107,9 +107,9 @@
       />
     </div>
 
-    <label for="rounds" class="font-semibold mt-6">Rounds</label>
+    <label for="rounds" class="font-semibold mt-6 text-white">Rounds</label>
     <div class="flex bg-zinc-800 rounded-sm p-3 mt-1">
-      <span class="font-semibold mr-3">{rounds}</span>
+      <span class="font-semibold mr-3 text-white">{rounds}</span>
       <input
         id="rounds"
         class="w-full accent-red-500"
@@ -123,7 +123,7 @@
     <button
       on:click={handleSubmit}
       type="button"
-      class="rounded-sm bg-red-500 font-semibold py-3 mt-12 hover:bg-red-400 focus:bg-red-400"
+      class="text-white rounded-sm bg-red-500 font-semibold py-3 mt-12 hover:bg-red-400 focus:bg-red-400"
     >
       Create game
     </button>
