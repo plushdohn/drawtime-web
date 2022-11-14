@@ -16,6 +16,8 @@
   import type { ExtendedSocket } from "$lib/logic/client/live/types";
   import BrushButton from "./BrushButton.svelte";
   import EraserButton from "./EraserButton.svelte";
+  import FillButton from "./FillButton.svelte";
+  import { floodFillCanvas } from "$lib/logic/client/canvas";
 
   export let game: GameState;
   export let socket: ExtendedSocket;
@@ -25,6 +27,7 @@
     Brush,
     Eraser,
     Bucket,
+    Fill,
   }
 
   let canvas: HTMLCanvasElement;
@@ -72,29 +75,35 @@
       return { x, y };
     }
 
-    const ctx = node.getContext("2d") as CanvasRenderingContext2D;
+    const ctx = node.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, node.width, node.height);
 
     function onPointerDown(event: PointerEvent) {
-      node.addEventListener("pointermove", onPointerMove);
-      node.addEventListener("pointerup", onPointerUp);
-      node.addEventListener("pointerleave", onPointerLeave);
-
       const { x, y } = getScaleAdjustedCoordinates(node, event);
 
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.strokeStyle = selectedTool === ToolKind.Brush ? color : "#ffffff";
-      ctx.lineWidth = size;
+      if (selectedTool === ToolKind.Brush || selectedTool === ToolKind.Eraser) {
+        node.addEventListener("pointermove", onPointerMove);
+        node.addEventListener("pointerup", onPointerUp);
+        node.addEventListener("pointerleave", onPointerLeave);
 
-      beginNewEvent({
-        kind: DrawingEventKind.Start,
-        sequence: [{ x, y }],
-        size,
-        color: selectedTool === ToolKind.Brush ? color : "#ffffff",
-      });
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.strokeStyle = selectedTool === ToolKind.Brush ? color : "#ffffff";
+        ctx.lineWidth = size;
+
+        beginNewEvent({
+          kind: DrawingEventKind.Start,
+          sequence: [{ x, y }],
+          size,
+          color: selectedTool === ToolKind.Brush ? color : "#ffffff",
+        });
+      } else if (ToolKind.Fill) {
+        floodFillCanvas(canvas, x, y, color);
+
+        updateDrawing(socket, { kind: DrawingEventKind.Fill, x, y, color });
+      }
     }
 
     function onPointerUp() {
@@ -156,14 +165,19 @@
         selected={selectedTool === ToolKind.Eraser}
         callback={() => (selectedTool = ToolKind.Eraser)}
       />
+
+      <FillButton
+        selected={selectedTool === ToolKind.Fill}
+        callback={() => (selectedTool = ToolKind.Fill)}
+      />
     </div>
 
     <div class="flex items-center gap-3">
       {#if selectedTool === ToolKind.Brush || selectedTool === ToolKind.Eraser}
         <BrushSizeSelector bind:size />
-        {#if selectedTool === ToolKind.Brush}
-          <ColorPicker bind:selectedColor={color} />
-        {/if}
+      {/if}
+      {#if selectedTool === ToolKind.Brush || selectedTool === ToolKind.Fill}
+        <ColorPicker bind:selectedColor={color} />
       {/if}
     </div>
   </div>

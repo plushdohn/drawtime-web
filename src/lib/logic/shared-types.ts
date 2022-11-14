@@ -185,6 +185,7 @@ export enum DrawingEventKind {
   Start,
   Continue,
   Clear,
+  Fill,
 }
 
 export type DrawingStartEvent = {
@@ -203,7 +204,18 @@ export type DrawingClearEvent = {
   kind: DrawingEventKind.Clear;
 };
 
-export type AnyDrawingEvent = DrawingStartEvent | DrawingContinueEvent | DrawingClearEvent;
+export type DrawingFillEvent = {
+  kind: DrawingEventKind.Fill;
+  color: string;
+  x: number;
+  y: number;
+};
+
+export type AnyDrawingEvent =
+  | DrawingStartEvent
+  | DrawingContinueEvent
+  | DrawingClearEvent
+  | DrawingFillEvent;
 
 /**
  * Utility types

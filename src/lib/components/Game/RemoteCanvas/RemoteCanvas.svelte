@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { floodFillCanvas } from "$lib/logic/client/canvas";
   import { subscribeToDrawingUpdates } from "$lib/logic/client/live/drawing";
   import type { ExtendedSocket } from "$lib/logic/client/live/types";
   import { GamePhase, type GameState, DrawingEventKind } from "$lib/logic/shared-types";
@@ -28,7 +29,7 @@
   }
 
   function remoteDrawing(node: HTMLCanvasElement) {
-    const ctx = node.getContext("2d") as CanvasRenderingContext2D;
+    const ctx = node.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
 
     const unsub = subscribeToDrawingUpdates(socket, (update) => {
       if (update.kind === DrawingEventKind.Start || update.kind === DrawingEventKind.Continue) {
@@ -45,6 +46,8 @@
       } else if (update.kind === DrawingEventKind.Clear) {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, node.width, node.height);
+      } else if (update.kind === DrawingEventKind.Fill) {
+        floodFillCanvas(node, update.x, update.y, update.color);
       }
     });
 
