@@ -19,6 +19,7 @@
       }
     | {
         guestUsername: string;
+        captchaToken: string;
       };
 
   let error: ErrorPhase | null = null;
@@ -36,7 +37,7 @@
       try {
         const socket = await connectToGameServer(
           "guestUsername" in authInfo
-            ? { guestUsername: authInfo.guestUsername }
+            ? { guestUsername: authInfo.guestUsername, captchaToken: authInfo.captchaToken }
             : { authToken: authInfo.accessToken, userId: authInfo.userId }
         );
 

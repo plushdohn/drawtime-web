@@ -12,7 +12,7 @@
   }
 </script>
 
-<div class="p-16 bg-zinc-800 rounded flex flex-col text-center max-w-md relative">
+<div class="p-8 lg:p-16 bg-zinc-800 rounded flex flex-col text-center max-w-md relative">
   <span class="text-3xl font-bold">Choose a word!</span>
   <span class="text-zinc-400 mt-4">
     If you don't choose, a word will be chosen randomly in 10 seconds.

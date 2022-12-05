@@ -15,7 +15,7 @@
   export let socket: ExtendedSocket;
 </script>
 
-<div class="absolute w-full h-full bg-[#000000aa] flex flex-col justify-center items-center">
+<div class="absolute p-8 w-full h-full bg-[#000000cc] flex flex-col justify-center items-center">
   {#if game.phase === GamePhase.Waiting}
     {#if game.players.length < (dev ? 1 : 2)}
       <WaitingPlayersScreen />

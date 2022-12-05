@@ -5,7 +5,7 @@
   export let socket: ExtendedSocket;
 </script>
 
-<div class="p-16 bg-zinc-800 rounded flex flex-col items-center max-w-sm text-center">
+<div class="p-8 lg:p-16 bg-zinc-800 rounded flex flex-col items-center max-w-sm text-center">
   <span class="font-bold text-4xl mb-3">All ready!</span>
   <span class="text-zinc-400">You can now start the game or wait for more players to join.</span>
   <button

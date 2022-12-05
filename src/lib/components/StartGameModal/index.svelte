@@ -5,6 +5,7 @@
   import CloseIcon from "$lib/components/icons/CloseIcon.svelte";
   import CreateGameForm from "./CreateGameForm.svelte";
   import JoinGameForm from "./JoinGameForm.svelte";
+  import CaptchaCheckbox from "$lib/components/Captcha.svelte";
 
   export let topicId: string;
   export let onCancel: () => void;
@@ -22,9 +23,10 @@
   let status = InterfaceStatus.Choosing;
 
   const { form, errors, handleSubmit, valid, validate } = createForm(
-    z.object({ username: guestUsernameSchema.nullable() }),
+    z.object({ username: guestUsernameSchema.nullable(), captchaToken: z.string() }),
     {
       username: auth === null ? "" : null,
+      captchaToken: auth === null ? null : "",
     },
     { onlyValidateAfterFirstSubmit: true }
   );
@@ -43,6 +45,12 @@
     if (!$valid) return;
 
     status = InterfaceStatus.Joining;
+  }
+
+  function onCaptchaChange(token: string | null) {
+    $form.captchaToken = token;
+
+    validate("captchaToken");
   }
 </script>
 
@@ -66,6 +74,17 @@
         {#if $errors.username}
           <span class="text-red-500 mt-1.5 text-xs">{$errors.username}</span>
         {/if}
+
+        <CaptchaCheckbox
+          callback={onCaptchaChange}
+          class={`mt-4 bg-zinc-900 border-red-500 border-red-500 self-center ${
+            $errors.captchaToken ? "border-2" : ""
+          }`}
+        />
+        {#if $errors.captchaToken}
+          <span class="text-zinc-400 text-sm text-red-500 mt-2">Please complete the captcha.</span>
+        {/if}
+
         <hr class="border-1 w-full border-zinc-700 mt-6 mb-3" />
       {/if}
 
@@ -98,13 +117,17 @@
     <CreateGameForm
       {onCancel}
       {topicId}
-      authInfo={auth !== null ? auth : { guestUsername: $form.username }}
+      authInfo={auth !== null
+        ? auth
+        : { guestUsername: $form.username, captchaToken: $form.captchaToken }}
     />
   {:else if status === InterfaceStatus.Joining}
     <JoinGameForm
       {onCancel}
       {topicId}
-      authInfo={auth !== null ? auth : { guestUsername: $form.username }}
+      authInfo={auth !== null
+        ? auth
+        : { guestUsername: $form.username, captchaToken: $form.captchaToken }}
     />
   {/if}
 </div>

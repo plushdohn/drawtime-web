@@ -16,7 +16,7 @@ export const gameServerConnectionStore = writable<GameServerConnectionStore>({
 });
 
 export const connectToGameServer = (
-  params: { userId: string; authToken: string } | { guestUsername: string }
+  params: { userId: string; authToken: string } | { guestUsername: string; captchaToken: string }
 ) => {
   return new Promise<ExtendedSocket>((resolve, reject) => {
     const storeValues = get(gameServerConnectionStore);
@@ -43,6 +43,7 @@ export const connectToGameServer = (
             : {
                 id: crypto.randomUUID(),
                 username: params.guestUsername,
+                captchaToken: params.captchaToken,
               },
       }) as ExtendedSocket;
     }
@@ -63,7 +64,7 @@ export const connectToGameServer = (
       gameServerConnectionStore.set({
         pending: false,
         error: "Server refused the connection",
-        socket: sock,
+        socket: null,
       });
 
       reject(new Error("Couldn't reach game servers"));

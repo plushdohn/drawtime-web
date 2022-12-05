@@ -26,9 +26,9 @@
   title={topic.name}
   class="flex-shrink-0 snap-start relative rounded-sm flex flex-col rounded-sm overflow-hidden cursor-pointer"
 >
-  <TopicThumbnail topicId={topic.id} class="w-64 aspect-video object-cover" />
+  <TopicThumbnail topicId={topic.id} class="w-48 lg:w-64 aspect-video object-cover" />
   <div
-    class="absolute inset-0 flex flex-col-reverse bg-gradient-to-t from-[#000000cc] via-[#00000099] p-4 text-left"
+    class="absolute inset-0 flex flex-col-reverse bg-gradient-to-t from-[#000000cc] via-[#00000099] p-3 lg:p-4 text-left"
   >
     {#if hovered}
       <span class="text-zinc-300 text-sm" transition:slide|local={{ duration: 200 }}>

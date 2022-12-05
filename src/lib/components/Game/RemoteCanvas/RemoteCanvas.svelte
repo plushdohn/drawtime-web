@@ -2,7 +2,12 @@
   import { floodFillCanvas } from "$lib/logic/client/canvas";
   import { subscribeToDrawingUpdates } from "$lib/logic/client/live/drawing";
   import type { ExtendedSocket } from "$lib/logic/client/live/types";
-  import { GamePhase, type GameState, DrawingEventKind } from "$lib/logic/shared-types";
+  import {
+    GamePhase,
+    type GameState,
+    DrawingEventKind,
+    type Player,
+  } from "$lib/logic/shared-types";
   import CanvasOverlay from "../CanvasOverlay/CanvasOverlay.svelte";
   import Clue from "../Clue.svelte";
   import GameTimer from "../GameTimer.svelte";
@@ -10,6 +15,8 @@
   export let game: GameState;
   export let userId: string;
   export let socket: ExtendedSocket;
+
+  $: artist = game.players.find((p) => p.id === game.artist);
 
   function clearOnRoundChange(node: HTMLCanvasElement) {
     const ctx = node.getContext("2d") as CanvasRenderingContext2D;
@@ -59,16 +66,25 @@
   }
 </script>
 
-<div class="relative flex flex-col h-full">
+<div class="shrink-0 relative flex flex-col">
   <Clue artist={game.artist} clue={game.clue} phase={game.phase} secret={game.secret} {userId} />
   <canvas
-    class="h-[88%] bg-white aspect-square"
+    class="portrait:w-full bg-white aspect-square landscape:h-[90%]"
     width="512"
     height="512"
     use:remoteDrawing
     use:clearOnRoundChange
   />
-  <div class="w-full bg-white" style="height: 6%;" />
+  <div
+    class="w-full flex items-center justify-center text-center bg-zinc-800 landscape:h-[5%] portrait:h-12 shrink-0 uppercase font-bold text-white text-xl"
+  >
+    {#if artist}
+      <span>
+        <span class="text-yellow-500">{artist.username}</span>
+        is drawing
+      </span>
+    {/if}
+  </div>
 
   {#if game.phase === GamePhase.Drawing}
     <GameTimer phase={game.phase} drawingTime={game.drawingTime} />

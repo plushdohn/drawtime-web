@@ -38,7 +38,7 @@
 </script>
 
 {#if game !== null}
-  <div class="flex h-full items-center p-16">
+  <div class="flex flex-col w-full h-full landscape:w-auto  landscape:flex-row landscape:p-16">
     <PlayerLeaderboard players={game.players} artistId={game.artist} />
     {#if socket.auth.id === game.artist && game.phase === GamePhase.Drawing}
       <ArtistCanvas {game} userId={socket.auth.id} {socket} />

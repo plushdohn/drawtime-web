@@ -135,7 +135,9 @@
   }
 </script>
 
-<div class="w-96 h-full bg-zinc-800 rounded ml-4 flex flex-col">
+<div
+  class="w-full min-h-0 h-full flex flex-col landscape:rounded landscape:bg-zinc-800 mt-1 landscape:mt-0 landscape:ml-3 landscape:w-80"
+>
   <div class="w-full h-full overflow-y-scroll p-4" bind:this={chatDiv}>
     {#each events as event}
       {#if event.kind === ChatEventKind.MESSAGE}
@@ -156,13 +158,13 @@
       {/if}
     {/each}
   </div>
-  <form class="w-full p-4" on:submit={handleSubmit}>
+  <form class="w-full md:p-4" on:submit={handleSubmit}>
     <input
       type="text"
       id="guess-input"
       autocomplete="off"
       placeholder="Guess or chat..."
-      class="w-full bg-zinc-700 p-4 rounded text-white"
+      class="w-full bg-zinc-700 md:p-3 p-2 md:rounded-sm text-white"
       bind:value={inputValue}
     />
   </form>

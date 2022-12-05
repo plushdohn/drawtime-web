@@ -9,7 +9,7 @@
 </script>
 
 <div
-  class="h-[6%] bg-red-500 w-full flex items-center justify-center font-semibold tracking-widest text-3xl uppercase"
+  class="landscape:h-[5%] portrait:h-14 bg-red-500 w-full flex items-center justify-center font-semibold tracking-widest text-center text-2xl lg:text-3xl uppercase"
 >
   {#if phase === GamePhase.Drawing}
     {#if artist === userId}
@@ -17,5 +17,7 @@
     {:else if clue !== null}
       {clue}
     {/if}
+  {:else}
+    &nbsp;
   {/if}
 </div>

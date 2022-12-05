@@ -33,7 +33,7 @@
   let canvas: HTMLCanvasElement;
 
   let selectedTool: ToolKind = ToolKind.Brush;
-  let color = "#000000";
+  let color = "#ef4444";
   let size = 1;
 
   function drawableCanvas(node: HTMLCanvasElement) {
@@ -143,16 +143,18 @@
   }
 </script>
 
-<div class="relative flex flex-col h-full">
+<div class="shrink-0 relative flex flex-col">
   <Clue phase={game.phase} clue={game.clue} secret={game.secret} artist={game.artist} {userId} />
   <canvas
-    class="h-[89%] bg-white aspect-square cursor-cell"
+    class="portrait:w-full bg-white aspect-square cursor-cell touch-none landscape:h-[90%]"
     width="512"
     height="512"
     use:drawableCanvas
     bind:this={canvas}
   />
-  <div class="w-full bg-zinc-800 flex justify-between items-center p-3" style="height: 5%;">
+  <div
+    class="w-full bg-zinc-800 landscape:h-[5%] portrait:h-14 flex justify-between items-center p-3"
+  >
     <div class="flex items-center gap-1">
       <ResetDrawingButton on:click={handleClear} />
 

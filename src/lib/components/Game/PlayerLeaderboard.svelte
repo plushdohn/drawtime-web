@@ -15,11 +15,16 @@
   });
 </script>
 
-<div class="flex flex-col">
+<div
+  class="p-2 md:p-4 shrink-0 flex overflow-x-scroll gap-1 landscape:flex-col landscape:gap-3 landscape:p-0 landscape:justify-center landscape:overflow-x-auto"
+>
   {#each sorted as player (player.id)}
-    <div class="flex items-center gap-4 my-2 p-4 rounded-l bg-zinc-800" animate:flip>
+    <div
+      class="shrink-0 flex p-2 gap-2 lg:gap-3 lg:p-3 items-center portrait:rounded landscape:rounded-l bg-zinc-800"
+      animate:flip
+    >
       <img
-        class="w-10 h-10 rounded-full"
+        class="w-8 rounded-full"
         class:grayscale={player.disconnected}
         src={player.avatarUrl}
         alt={player.username}

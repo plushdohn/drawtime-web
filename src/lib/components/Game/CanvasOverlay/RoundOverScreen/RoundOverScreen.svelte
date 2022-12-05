@@ -8,7 +8,9 @@
   export let artist: string;
 </script>
 
-<div class="relative p-16 bg-zinc-800 rounded flex flex-col items-center text-center max-w-sm">
+<div
+  class="relative p-8 lg:p-16 bg-zinc-800 rounded flex flex-col items-center text-center max-w-sm"
+>
   <span class="font-bold text-4xl mb-4">Round over!</span>
   <span class="text-zinc-400">
     The word was

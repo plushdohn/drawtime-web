@@ -18,9 +18,9 @@
   }, -1);
 </script>
 
-<div class="flex flex-col w-full">
+<div class="flex flex-col w-full overflow-y-auto min-h-0 max-h-32">
   {#each sortedPlayers as player (player.id)}
-    <div class="flex items-center w-full font-bold text-2xl py-2 whitespace-nowrap">
+    <div class="flex items-center w-full font-bold text-2xl p-2 whitespace-nowrap">
       <img src={player.avatarUrl} class="w-8 h-8 rounded-full mr-3" alt="" />
       <span class="text-white font-semibold text-base mr-8 w-full text-left truncate">
         {player.username}

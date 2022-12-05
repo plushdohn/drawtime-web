@@ -40,10 +40,22 @@
 </svelte:head>
 
 <div
-  data-theme="light"
   class={"g-recaptcha " + clazz}
   data-sitekey={PUBLIC_RECAPTCHA_SITE_KEY}
   data-callback="handleCaptchaCallback"
   data-expired-callback="handleCaptchaRejection"
+  data-size="normal"
   data-error-callback="handleCaptchaRejection"
 />
+
+<style global>
+  .g-recaptcha {
+    overflow: hidden;
+    width: 298px;
+    height: 74px;
+  }
+
+  .g-recaptcha iframe {
+    margin: -1px 0px 0px -2px;
+  }
+</style>

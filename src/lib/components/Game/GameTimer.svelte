@@ -30,6 +30,6 @@
 </script>
 
 <div
-  class="bg-yellow-500 absolute inset-0 h-2 w-full"
+  class="bg-yellow-500 absolute inset-0 h-1.5 w-full"
   style={`transform: scaleX(${$progress}%);`}
 />
